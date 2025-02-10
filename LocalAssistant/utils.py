@@ -7,6 +7,7 @@ import shutil
 import logging
 
 from transformers import BitsAndBytesConfig
+import warnings
 
 ###### - Add more model:
 # 1.n.n
@@ -32,10 +33,16 @@ class UtilsExtension:
 
         # path and stuffs
         self.project_path: str = pathlib.Path(__file__).parent
-
         self.env_path: pathlib.Path = self.project_path
+
+        timeout: int = 100
         while self.env_path.name != '.venv': # goes back until reach .venv
+            if not timeout:
+                warnings.warn(f"Cannot detect '.venv', set main path to {self.project_path}. \
+                    Remember it is recommended to use the installer. ")
+                self.env_path = self.project_path
             self.env_path = self.env_path.parent
+            timeout -= 1
 
         self.model_path: str = self.env_path.parent / 'models'
         self.user_path: str = self.env_path.parent / 'users'
@@ -43,8 +50,7 @@ class UtilsExtension:
 
     @staticmethod
     def read_json_file(path: str):
-        """
-        Read a json file.
+        """Read a json file.
 
         Args:
             path (str): file's path.
@@ -59,8 +65,7 @@ class UtilsExtension:
 
     @staticmethod
     def write_json_file(path: str, data: dict) -> None:
-        """
-        Write a json file.
+        """Write a json file.
 
         Args:
             path (str): file's path.
@@ -98,8 +103,7 @@ There will be no turning back. Continue? [y/(n)]: ")
         shutil.rmtree(self.env_path)
 
     def load_chat_history(self, user: str) -> tuple[list, str]:
-        """ 
-        Load chat history!
+        """Load chat history!
 
         Args:
             user (str): user's name.
@@ -240,8 +244,7 @@ class ConfigManager:
         self.utils_ext.print_dict(self.data)
 
     def check_exist_user_physically(self, target: str) -> bool:
-        """
-        Check user in folder.
+        """Check user in folder.
 
         Args:
             target (str): user's name.
@@ -260,8 +263,7 @@ class ConfigManager:
             return False
 
     def check_for_exist_user(self, user: str):
-        """
-        Check user in but in current data.
+        """Check user in but in current data.
 
         Args:
             user (str): user's name.
