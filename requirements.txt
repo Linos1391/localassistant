@@ -1,6 +1,35 @@
-transformers[torch]
-bitsandbytes
-sentence-transformers
-PyMuPDF
-sentencepiece
-pyvis
+# Download Llama.cpp - https://llama-cpp.com/download/ # With "-DGGML_CUDA=on" for CUDA
+
+
+# Main
+torch
+torchvision
+haystack-ai
+
+# For gui
+PyQt6
+pyqt6-multiselect-combobox
+qt-material
+animflow
+
+# For downloading
+huggingface-hub
+
+# For web-searching
+ddgs-haystack
+
+# For docs retrieving:
+fastembed-haystack
+qdrant-haystack
+
+# For docs  reading
+pypdf
+markdown-it-py
+mdit_plain
+trafilatura
+python-pptx
+python-docx
+jq
+openpyxl
+tabulate
+pandas

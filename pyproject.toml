@@ -1,6 +1,64 @@
-[build-system]
-requires = [
-  "setuptools >= 42",
-  "wheel",
+[project]
+name = "localassistant"
+authors = [
+    { name="Linos1391", email="linos.coding@gmail.com" },
 ]
-build-backend = "setuptools.build_meta"
+dynamic = ["version"]
+description = "LocalAssistant (locas) is an AI designed to be used in CLI. (Currently in development)"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "animflow>=0.1.5",
+    "ddgs-haystack>=1.1.0",
+    "fastembed-haystack>=2.3.0",
+    "haystack-ai>=2.26.1",
+    "huggingface-hub>=1.8.0",
+    "jq>=1.11.0",
+    "markdown-it-py>=4.2.0",
+    "mdit-plain>=1.0.1",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.3",
+    "pip-autoremove>=0.10.0",
+    "pypdf>=6.14.2",
+    "pyqt6>=6.10.2",
+    "pyqt6-multiselect-combobox>=1.2.0",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
+    "qdrant-haystack>=10.3.0",
+    "qt-material>=2.17",
+    "setuptools>=80.10.2",
+    "tabulate>=0.10.0",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
+    "trafilatura>=2.1.0",
+    "transformers[torch]>=5.3.0",
+]
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.14",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Environment :: X11 Applications :: Qt",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Unix",
+]
+
+[project.scripts]
+locas = "LocalAssistant.qt_gui.app:main"
+
+[project.urls]
+Repository = "https://github.com/Linos1391/LocalAssistant.git"
+Issues = "https://github.com/Linos1391/LocalAssistant/issues"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "localassistant/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["localassistant"]
