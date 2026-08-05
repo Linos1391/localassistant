@@ -73,7 +73,8 @@ def _chat_tab_setup(self):
         if getattr(self, "agent", None) is None:
             model_meta: ModelMetadata = ModelGuide.AGENT.value
             model_name: str = self._get_model_name(model_meta.role[0], model_meta.url)
-            if model_name is None:
+            if not model_name:
+                self._show_error((AssertionError, "Cannot access to a valid agent."))
                 return
 
             llama_kwargs: dict = {}
@@ -115,7 +116,7 @@ def _chat_tab_setup(self):
 
             llama_worker = Worker(fn=llama_server_process.check_model_loaded)
             llama_worker.signal.error_signal.connect(
-                lambda err: (__chat_message_error(err, None, None), _remove())
+                lambda err: (__chat_message_error(err, None, None))
             )
             llama_worker.signal.result_signal.connect(
                 lambda: (_remove(), chat_load_button.setText(Constant.BUTTON_RELOAD_MODEL))
