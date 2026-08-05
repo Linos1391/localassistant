@@ -1,207 +1,284 @@
 """User friendly LocalAssistant automatic installer."""
-
 import os
-import pathlib
+from pathlib import Path
 import sys
 import venv
 import subprocess
 import shutil
 
-def choose_path() -> str:
-    """To choose the path. Use the same path to upgrade."""
-    while True:
-        path: str = input(f'\nPlease choose the path for LocalAssistant. [{os.getcwd()}]: ')
-        if path == '':
-            path = os.getcwd()
+class Installer:
+    """OOP friendly."""
+    @staticmethod
+    def draw_horizontal_line():
+        """Decoratively draw a horizontal line (lol)"""
+        print("=" * os.get_terminal_size().columns)
+
+    @staticmethod
+    def choose_env_path() -> Path:
+        """Select .venv path to install into"""
+        while True:
+            input_path: str = input(
+                f"\nPlease choose the path for LocalAssistant. [{os.getcwd()}]: "
+            )
+            if not input_path:
+                env_path: Path = Path.cwd()
+                break
+
+            env_path: Path = Path(input_path)
+            if env_path.exists():
+                if input(
+                    f"'{input_path}' is an existed folder, are you sure to use path? "
+                     "(If you are updating LocalAssistant, go ahead!) (y/[N]): "
+                ).lower() != 'y':
+                    continue
+            else:
+                env_path.mkdir(parents=True)
             break
+        print(f"Using '{input_path}'.")
+        os.chdir(env_path)
+        venv.create('.venv', with_pip=True, prompt='LocalAssistant')
+        return env_path
 
-        path: pathlib.Path = pathlib.Path(path)
-        if path.exists():
-            if not path.is_dir():
-                print(f"'{path}' is not a folder. Please try again.")
-                continue
-            if input(f"'{path}' is an existed folder, are you sure to use path? \
-(If you are updating LocalAssistant, go ahead!) (y/[n]): ").lower() != 'y':
-                continue
-        else:
-            os.makedirs(path)
-        break
-    print(f"Using '{path}'.")
-    return path
+    @staticmethod
+    def choose_localassistant_version(env_path: Path) -> str:
+        """Choose a version to install, default is the latest one."""
+        print("\nChoosing version.")
 
-def _choose_pytorch_compute(compute_platform: dict) -> str:
-    """For user to choose with devide they want."""
-    print('\nChoose your PyTorch compute from these:')
-    for device in compute_platform.keys():
-        print(f'  - {device}')
+        pip_cmd = [Installer.get_venv_python(env_path), "-m", "pip"]
+        pip_available = False
 
-    while True:
-        chosen_device = input('Select one [cpu]: ')
-        if not chosen_device:
-            chosen_device = 'cpu'
-        if chosen_device in tuple(compute_platform.keys()):
-            print(f'Using {chosen_device}.\n')
-            return compute_platform[chosen_device]
-        print(f'Invalid compute: {chosen_device}.\n')
+        try:
+            subprocess.run(
+                pip_cmd + ["--version"], capture_output=True, text=True, check=True
+            )
+            pip_available = True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
 
-def choose_command() -> tuple[str]:
-    """Making appropriate command for right version."""
-    if sys.platform == 'win32': # Window
-        python: str = 'python'
-        command: str = '.venv\\Scripts\\activate'
-        sep: str = '&&'
+        if not pip_available:
+            for external_pip in ("pip", "pip3"):
+                pip_path = shutil.which(external_pip)
+                if not pip_path:
+                    continue
+                try:
+                    subprocess.run(
+                        [pip_path, "--version"], capture_output=True, text=True, check=True
+                    )
+                    pip_cmd = [pip_path]
+                    pip_available = True
+                    break
+                except subprocess.CalledProcessError:
+                    continue
 
-        compute_dict: dict = {
-            "cuda 11.8": "pip3 install \
-                torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118",
-            "cuda 12.1": "pip3 install \
-                torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121",
-            "cuda 12.4": "pip3 install \
-                torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124",
-            "cpu": "pip3 install torch torchvision torchaudio",
-        }
-        pytorch: str = _choose_pytorch_compute(compute_dict)
-    else:
-        python: str = 'python3'
-        command: str = 'source .venv/bin/activate'
-        sep: str = ';'
+        if not pip_available:
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "ensurepip", "--upgrade"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                subprocess.run(pip_cmd + ["--version"], capture_output=True, text=True, check=True)
+                pip_available = True
+            except subprocess.CalledProcessError as exc:
+                raise RuntimeError(
+                    "Could not bootstrap pip. Install pip manually or use a Python build that "
+                    "includes ensurepip."
+                ) from exc
 
-        if sys.platform == 'darwin': # MacOS
-            print('MacOS only has cpu compute.\n')
-            pytorch: str = 'pip3 install torch torchvision torchaudio'
-        else: # Linux
-            compute_dict: dict = {
-                "cuda 11.8": "pip3 install torch torchvision torchaudio \
-                    --index-url https://download.pytorch.org/whl/cu118",
-                "cuda 12.1": "pip3 install torch torchvision torchaudio \
-                    --index-url https://download.pytorch.org/whl/cu121",
-                "cuda 12.4": "pip3 install torch torchvision torchaudio",
-                "rocm": "pip3 install torch torchvision torchaudio \
-                    --index-url https://download.pytorch.org/whl/rocm6.2",
-                "cpu": "pip3 install torch torchvision torchaudio \
-                    --index-url https://download.pytorch.org/whl/cpu",
-            }
-            pytorch: str = _choose_pytorch_compute(compute_dict)
-    return (python, command, sep, pytorch)
+        version_process = subprocess.run(
+            pip_cmd + ["index", "versions", "localassistant", "--pre"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
 
-def choose_version() -> str:
-    """Choose version to install."""
-    call_version: list = subprocess.run('pip index versions LocalAssistant --pre',
-                                  check=False,
-                                  shell=True,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  universal_newlines=True).stdout.split()
-    try:
-        call_version =  call_version[:call_version.index('LATEST:')]
-    except ValueError:
-        pass
+        version_process_stdout = version_process.stdout or ""
+        if not version_process_stdout.strip():
+            raise OSError("Cannot read the version. Please create an issue.")
 
-    try:
-        install_index: int = call_version.index('INSTALLED:')
-        install_version: str = call_version[install_index + 1]
-        print(f'Detected installed LocalAssistant v{install_version}.')
-    except ValueError:
-        install_index: int = len(call_version)
+        call_version: list = version_process_stdout.split()
+        del version_process, version_process_stdout
 
-    pre_version: str = ''
-    latest_version: str = ''
+        try:
+            call_version =  call_version[:call_version.index("LATEST:")]
+        except ValueError:
+            pass
 
-    version_list: list = call_version[(call_version.index('versions:')+1):install_index]
-    print(f'Available version: {" ".join(version_list)}')
-    for version in version_list:
-        if pre_version and latest_version:
-            break
-        if 'rc' in version:
-            pre_version = version.replace(',','')
-        else:
-            latest_version = version.replace(',','')
+        try:
+            install_index: int = call_version.index("INSTALLED:")
+            install_version: str = call_version[install_index + 1]
+            print(f'Detected installed LocalAssistant: v{install_version}.')
+        except ValueError:
+            install_index: int = len(call_version)
 
-    print(f'  Pre-release version: {pre_version}\n  Latest version: {latest_version}')
-    desire_version: str = ''
-    while True:
-        desire_version = input(f'Which version to install [{latest_version}]: ')
-        if not desire_version:
-            desire_version = latest_version
-        if f'{desire_version},' in version_list:
-            print(f'Installing LocalAssistant v{desire_version}.')
-            break
-        print(f'Invalid version: {desire_version}.')
-    return desire_version
+        pre_version: str = ""
+        latest_version: str = ""
 
-def setup_path(env_path: str):
-    """So that locas can be called everywhere."""
-    print('\nSetting up path.')
+        version_list: list = call_version[(call_version.index("versions:") + 1):install_index]
+        print(f"Available version: {' '.join(version_list)}")
+        for version in version_list:
+            if pre_version and latest_version:
+                break
+            elif "rc" in version and not pre_version:
+                pre_version = version.replace(",", "")
+            elif not latest_version:
+                latest_version = version.replace(",", "")
 
-    content: str = f"""\
-:; if [ -z 0 ]; then
-  @echo off
-  goto :WINDOWS
-fi
+        print(f"  Pre-release version: {pre_version}\n"
+              f"  Latest version: {latest_version}")
+        desire_version: str = ""
+        while True:
+            desire_version = input(f"Which version to install [{latest_version}]: ")
+            if not desire_version:
+                desire_version = latest_version
+            if f"{desire_version}," in version_list:
+                print(f'Installing LocalAssistant v{desire_version}.')
+                break
+            print(f'Invalid version: {desire_version}.')
+        return desire_version
 
-#UNIX
-source "{'/'.join(str(env_path).split('\\'))}/.venv/bin/activate" ; locas $@
-exit 0
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-:WINDOWS
-"{env_path}\\.venv\\Scripts\\activate" && locas %*
-"""
-    with open('locas.cmd', mode="w", encoding="utf-8") as write_file:
-        write_file.write(content)
-        write_file.close()
+    @staticmethod
+    def get_venv_python(env_path: Path) -> str:
+        """Return the path to the venv Python executable."""
+        if sys.platform == "win32":
+            return str(env_path / ".venv" / "Scripts" / "python.exe")
+        return str(env_path / ".venv" / "bin" / "python")
 
-    if not shutil.which('locas.cmd'): # haven't set path yet.
+    @staticmethod
+    def install_dependencies(version: str, env_path: Path):
+        """Installing the dependencies (include localassistant) within the venv."""
+        print("\nInstalling dependencies:")
+        subprocess.run(
+            [
+                Installer.get_venv_python(env_path),
+                "-m",
+                "pip",
+                "install",
+                f"LocalAssistant=={version}",
+                "--upgrade",
+            ],
+            check=True,
+        )
+
+    @staticmethod
+    def setup_execute_file(env_path: Path) -> bool:
+        """Setup the execute script so that localassistant can be used globally."""
+        print("\nSetting up path.")
+
+        execute_content: str = (
+            ":; if [ -z 0 ]; then"
+            "\n  @echo off"
+            "\n  goto :WINDOWS"
+            "\nfi"
+            "\n"
+            "\n#UNIX"
+            f"\nsource '{env_path.resolve() / '.venv' / 'bin' / 'activate'}' ; locas $@"
+            "\nexit 0"
+            "\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+            "\n:WINDOWS"
+            f"\n'{env_path.resolve() / '.venv' / 'Scripts' / 'activate'}' && locas %*"
+        )
+
+        locas_executor: str = "locas.cmd" if sys.platform == "win32" else "locas"
+        locas_executor_path: Path = env_path / locas_executor
+        with locas_executor_path.open("w", encoding="utf-8") as f:
+            f.write(execute_content)
+            f.close()
+
+        locas_existed = shutil.which("locas")
+        if locas_existed and Path(locas_existed).parent == env_path:
+            return True # already set the path, meaning this is just upgrading.
+
         if sys.platform == 'win32':
-            os.system(f"powershell $old_path=[Environment]::GetEnvironmentVariable('path','user');\
-                                   $new_path=$old_path+';'+'{env_path}';\
-                                   [Environment]::SetEnvironmentVariable('path',$new_path,'User');")
+            subprocess.run(
+                "powershell $old_path=[Environment]::GetEnvironmentVariable('path','user');"
+               f"$new_path=$old_path+';'+'{env_path}';"
+                "[Environment]::SetEnvironmentVariable('path',$new_path,'User');",
+                check=True, shell=True
+            )
         else:
-            os.system(f"chmod a+x locas.cmd;\
-                        echo 'export LocalAssistant='{env_path}';\
-                              export PATH=$LocalAssistant:$PATH' >> ~/.bash_profile;\
-                        source ~/.bash_profile")
+            rc_content: str = (
+                f"\nexport LocalAssistant={env_path};"
+                 "\nexport PATH=$LocalAssistant:$PATH"
+            )
+            if input("Detect Unix platform. Are you using bash? ([Y]/n)").lower() == "n":
+                print(
+                    "If so, please manually paste the following into your shell startup file "
+                   f"(eg: .zshrc, etc.):\n{rc_content}"
+                )
 
-def setup_rebel(env_path: str, command: str, python: str, sep: str):
-    """For our beloved memory."""
-    path = os.path.join(env_path, 'models', 'built-in', 'Rebel')
-    if pathlib.Path(path).exists():
-        print('Found user already install Rebel (Relation extraction).')
-        return
-    print('Process to install Rebel (Relation extraction model).')
+            else:
+                subprocess.run(
+                    "chmod a+x locas;"
+                   f"echo '{rc_content}' >> ~/.bashrc;"
+                    "source ~/.bashrc", check=True, shell=True)
+        return False
 
-    temp_path: str = os.path.join(env_path, '_temp.py')
+    @staticmethod
+    def setup_llama_cpp_bin_path(env_path: Path):
+        """Llama.cpp bin path."""
+        llama_path: str = input("\nPaste in the path to installed llama.cpp bin (.../build/bin): ")
 
-    temp_file = open(temp_path, mode='w', encoding='utf-8')
-    temp_file.write('from LocalAssistant.model_processor import DownloadExtension\
-\nDownloadExtension().download_rebel()')
-    temp_file.close()
+        subprocess.run([
+            Installer.get_venv_python(env_path),
+            "-c", (
+                "from localassistant.utils import Setting, SettingKey;"
+                "setting = Setting();"
+                "setting.data.update({"
+                    f"SettingKey.LLAMA_CPP_BIN: {llama_path}"
+                "});"
+                "Setting().update_setting_file()"
 
-    os.system(sep.join((command, f'{python} "{temp_path}"')))
-    os.remove(temp_path)
+            )
+        ], check=True)
 
-def main():
-    """The main function."""
-    print('Welcome to LocalAssistant automatic installer.')
-    assert sys.version_info.major >= 3 and sys.version_info.minor >= 10,\
-        f'Python version is expected to be above 3.10, but got {sys.version.split()[0]} instead.'
+    @staticmethod
+    def setup_starter_models(env_path: Path):
+        """The starter models that I always use."""
+        if input("\nDo you want to install starter models ([Y]/n): ").lower() == "n":
+            return
 
-    env_path: str = choose_path()
-    _python, _command, _sep, _pytorch = choose_command()
+        subprocess.run([
+            Installer.get_venv_python(env_path),
+            "-c", (
+                "from localassistant.models.download import download_starter_models;"
+                "download_starter_models()"
+            )
+        ], check=True)
 
-    os.chdir(env_path)
-    venv.create('.venv', with_pip=True, prompt='LocalAssistant')
+    @staticmethod
+    def install():
+        """The main function."""
+        print('Welcome to LocalAssistant automatic installer.')
+        assert sys.version_info.major >= 3 and sys.version_info.minor >= 14,(
+           f"Python version is expected to be above 3.14, but got {sys.version.split()[0]} instead."
+        )
 
-    # update pip to use `pip index versions LocalAssistant`.
-    subprocess.run(f'{_python} -m pip install --upgrade pip',\
-        check=False, shell=True, stdout=subprocess.PIPE)
-    version = choose_version()
+        # Choose env path.
+        Installer.draw_horizontal_line()
+        env_path: Path = Installer.choose_env_path()
 
-    # Installing dependences.
-    print('\nInstalling dependences:')
-    os.system(_sep.join([_command, _pytorch, f'pip3 install LocalAssistant=={version} --upgrade']))
+        # Choose version to install.
+        Installer.draw_horizontal_line()
+        version = Installer.choose_localassistant_version(env_path)
 
-    setup_path(env_path)
-    setup_rebel(env_path, _command, _python, _sep)
+        # Installing dependencies.
+        Installer.draw_horizontal_line()
+        Installer.install_dependencies(version, env_path)
+
+        # Setup stuffs.
+        Installer.draw_horizontal_line()
+        is_upgrade: bool = Installer.setup_execute_file(env_path)
+
+        if not is_upgrade:
+            # Setup llama.cpp path
+            Installer.draw_horizontal_line()
+            Installer.setup_llama_cpp_bin_path(env_path)
+
+            # Install starters models
+            Installer.draw_horizontal_line()
+            Installer.setup_starter_models(env_path)
 
 if __name__ == '__main__':
-    main()
+    Installer.install()
