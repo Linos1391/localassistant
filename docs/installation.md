@@ -4,7 +4,7 @@ Before installing, please make sure to acquire **Llama.cpp** beforehand (install
 
 ## Installing
 
-Download [locas_installer.py](https://github.com/Linos1391/LocalAssistant/releases/download/v2.0.0rc1/locas_installer.py), and let magic happens.
+Download [locas_installer.py](https://github.com/Linos1391/localassistant/blob/main/locas_installer.py), and let magic happens.
 
 | Window                    | Unix                       |
 | ------------------------- | -------------------------- |
