@@ -11,8 +11,13 @@ repo_url: https://github.com/Linos1391/localassistant
 nav:
   - Home: index.md
   - Installation: installation.md
-  # - Models: models.md
-  # - Commands: commands.md
+  - Models: models.md
+  - Tabs:
+    - 'Chat Tab': 'tabs/tab_chat.md'
+    - 'Documents Tab': 'tabs/tab_documents.md'
+    - 'Download Tab': 'tabs/tab_download.md'
+    - 'Setting Tab': 'tabs/tab_setting.md'
+  
 
 extra_javascript:
   - javascript/readthedocs.js

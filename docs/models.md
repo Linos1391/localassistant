@@ -1,61 +1,54 @@
-**Notice:** After [Quick Start](quick_start.md), all these models below are all installed. You should NOT download them again.
+**Notice:** These are found and switchable within the Setting tabs. After the `locas_installer.py` script, all models are made available. (with the sole exception of [Agent LoRA](#agent-lora))
 
-## Text Generation Model
+## Agent
 
-### Overview
+The main Image Text to Text model used for communication, has to be gguf for compatible with Llama.cpp.
 
-Text generation is the main model used for communicating between user and LocalAssistant. Got labeled as 'Text_Generation' or '1'.
+**Recommendation:** [unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-BF16.gguf](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF/blob/main/Qwen3.5-0.8B-BF16.gguf).
 
-### Downloading
+*(Choose other models from [here](https://huggingface.co/models?pipeline_tag=image-text-to-text&apps=llama.cpp).)*
 
-I recommend to try Qwen, no need for `hf_token` and is light-weight.
 
-```
-locas.cmd download -n qwen Qwen/Qwen2.5-1.5B-Instruct 1
-```
+## Agent Mmproj
 
-*(Choose other models from [here](https://huggingface.co/models?pipeline_tag=text-generation&library=safetensors&sort=trending).)*
+The mmproj of the Image Text to Text model, essential for vision-enabled agent, has to be gguf for compatible with Llama.cpp.
 
-If you're too familiar with HuggingFace and confident enough about your device, try '[meta-llama/Meta-Llama-3-8B](https://huggingface.co/meta-llama/Meta-Llama-3-8B/tree/main)'.
+**Recommendation:** [unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF/blob/main/mmproj-BF16.gguf).
 
-## Sentence Transformer Model
+*(Choose other models from [here](https://huggingface.co/models?pipeline_tag=image-text-to-text&apps=llama.cpp).)*
 
-### Overview
 
-Sentence transformer is a model used to semantic search data from provided documents. Required for `locas docs ...`. Got labeled as 'Sentence_Transformer' or '2'.
+## Agent Lora
 
-### Downloading
+The LoRA for the Image Text to Text model, for easily modifying the agent, has to be gguf for compatible with Llama.cpp.
 
-What this model does is encoding docs and retrieving information. You will NOT need any *fancy and advance* models like MsMarco.
+**Recommendation:** None.
 
-```
-locas.cmd download -n minilm sentence-transformers/all-MiniLM-L6-v2 2
-```
+*(Make your own LoRA from [here](https://huggingface.co/blog/ngxson/gguf-my-lora).)*
 
-*(Choose other models from [here](https://huggingface.co/sentence-transformers?sort_models=modified#models).)*
 
-## Cross Encoder Model
+## Dense Embedder
 
-### Overview
+Fastembed dense text embedder, should only in the supported list.
 
-Cross encoder is a model used to rerank data after retrieving information process. Required for `locas docs ...`. Got labeled as 'Cross_Encoder' or '3'.
+**Recommendation:** [Qdrant/clip-ViT-B-32-text](https://huggingface.co/Qdrant/clip-ViT-B-32-text).
 
-### Download
+*(Choose other models from [here](https://qdrant.github.io/fastembed/examples/Supported_Models/#supported-text-embedding-models).)*
 
-```
-locas.cmd download -n msmarco cross-encoder/ms-marco-MiniLM-L-6-v2 3
-```
 
-*(Choose other models from [here](https://huggingface.co/cross-encoder?sort_models=modified#models).)*
+## Sparse Embedder
 
-## Built-in Model
+Fastembed sparse text embedder, should only in the supported list.
 
-### Overview
+**Recommendation:** [Qdrant/bm25](https://huggingface.co/Qdrant/bm25).
 
-Models here is NOT trained by me, but rather being used for LocalAssistant's function. If one is broken by any chances, try remove its folder in `models/built-in` and run installation again.
+*(Choose other models from [here](https://qdrant.github.io/fastembed/examples/Supported_Models/#supported-sparse-text-embedding-models).)*
 
-### Rebel - Relation Extraction
 
-**Source:** [Babelscape/rebel-large](https://huggingface.co/Babelscape/rebel-large).
+## Image Embedder
 
-This model is used for relation extraction and creating knowledge graph. Required for memory function in `locas start` and relation extraction in `locas docs extract`.
+Fastembed image embedder, currently only support multimodel (text retrieve image) since unimodel(image retrieve image) is too expensive, should only in the supported list.
+
+**Recommendation:** [Qdrant/clip-ViT-B-32-vision](https://huggingface.co/Qdrant/clip-ViT-B-32-vision).
+
+*(Choose other models from [here](https://qdrant.github.io/fastembed/examples/Supported_Models/#supported-image-embedding-models).)*

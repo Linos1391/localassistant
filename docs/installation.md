@@ -2,8 +2,6 @@
 
 Before installing, please make sure to acquire **Llama.cpp** beforehand (install instruction [here](https://llama-cpp.com/getting-started/)).
 
-<br>
-
 ## Installing
 
 Download [locas_installer.py](https://github.com/Linos1391/LocalAssistant/releases/download/v2.0.0rc1/locas_installer.py), and let magic happens.
@@ -13,8 +11,6 @@ Download [locas_installer.py](https://github.com/Linos1391/LocalAssistant/releas
 | python locas_installer.py | python3 locas_installer.py |
 
 Let's go through all questions!
-
-<br>
 
 ### Question 1: Choose path
 
@@ -48,8 +44,6 @@ Choose the folder, copy its path *(`Ctrl+Shift+C` for Window or `Ctrl+C` for mos
 
 **Notice:** It may ask for comfirmation when folder is already existed.
 
-<br>
-
 ### Question 2: Choose version
 
 ```
@@ -60,8 +54,6 @@ Which version to install [...]:
 ```
 
 All version that got published will be shown. Choose the one that fill your need. Leave empty for the latest version.
-
-<br>
 
 ### Question 3: Paste Llama.cpp bin path *(Skipped if upgrading)*
 
@@ -85,8 +77,6 @@ Go to the setting tab and paste the Llama.cpp bin path you just installed. (.../
 
 Save the setting and enjoy.
 
-<br>
-
 ### Question 4: Install starter models *(Skipped if upgrading)*
 
 ```
@@ -95,7 +85,9 @@ Do you want to install starter models ([Y]/n):
 
 Recommend to choose yes, please type `n` if you do not want to.
 
-Models that will be installed:
+**Remember, they are downloaded, not installed yet. Please get into the Setting tab, switch the downloaded models, save and enjoy.**
+
+*Models that will be installed:*
 | Repo id                                          | Description                                                       |
 | ------------------------------------------------ | ----------------------------------------------------------------- |
 | unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-BF16.gguf | BF16 version of Qwen3.5 0.8B, used for llama.cpp                  |
@@ -104,13 +96,11 @@ Models that will be installed:
 | Qdrant/bm25                                      | Fastembed sparse embedder, use BM25                               |
 | Qdrant/clip-ViT-B-32-vision                      | Fastembed image embedder, multimodel (text&image)                 |
 
-<br>
+For more details, see [here](models.md)
 
 ## Updating
 
 What you need is installing localassistant again on the path where needed to be upgraded *(Question 1)*. Your existed assets won't be touched during this process.
-
-<br>
 
 ## Uninstalling
 
