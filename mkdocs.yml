@@ -9,7 +9,7 @@ repo_name: localassistant
 repo_url: https://github.com/Linos1391/localassistant
 
 nav:
-  - Home: home.md
+  - Home: index.md
   - Installation: installation.md
   # - Models: models.md
   # - Commands: commands.md

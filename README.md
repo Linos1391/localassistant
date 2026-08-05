@@ -15,7 +15,7 @@
 [latest-commit-url]: https://github.com/Linos1391/localassistant/commits/main
 [pypi-shield]: https://img.shields.io/badge/pypi-localassistant-blue
 [pypi-url]: https://pypi.org/project/localassistant/
-[python-shield]: https://img.shields.io/badge/python-3.10+-yellow
+[python-shield]: https://img.shields.io/badge/python-3.14+-yellow
 [python-url]: https://www.python.org/downloads/
 
 ![icon](https://github.com/Linos1391/localassistant/blob/main/docs/asset/icon.png?raw=true)
@@ -29,7 +29,9 @@
 # Brief Overview
 
 <div align="center">
+
 ![preview](https://github.com/Linos1391/localassistant/blob/main/docs/asset/preview.gif?raw=true)
+
 </div>
 
 Localassistant used to be an AI that communicating through terminal, now got upgrade into Qt6 for more diverse users. It utilizes Llama.cpp for user-friendly model, even supports vision-enabled models. For documents retrieve, it supports Qdrant and Fastembed which are the fastest and most space-efficient in 2026.
