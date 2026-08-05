@@ -1,7 +1,9 @@
 
 **Your AI friend.**
 
-![preview](asset/preview.gif)
+<div align="center">
+    <img src="https://github.com/Linos1391/localassistant/blob/main/docs/asset/preview.gif?raw=true" width="90%">
+</div>
 
 Localassistant used to be an AI that communicating through terminal, now got upgrade into Qt6 for more diverse users. It utilizes Llama.cpp for user-friendly model, even supports vision-enabled models. For documents retrieve, it supports Qdrant and Fastembed which are the fastest and most space-efficient in 2026.
 
@@ -12,9 +14,9 @@ Localassistant used to be an AI that communicating through terminal, now got upg
 Learn more through these instructions below:
 
 - [Installation](installation.md)
-- [Quick Start](quick_start.md)
+<!--
 - [Models](models.md)
-- [Commands](commands.md)
+- [Commands](commands.md) -->
 
 <br>
 
