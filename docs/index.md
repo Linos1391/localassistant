@@ -13,9 +13,12 @@ Localassistant used to be an AI that communicating through terminal, now got upg
 Learn more through these instructions below:
 
 - [Installation](installation.md)
-<!--
 - [Models](models.md)
-- [Commands](commands.md) -->
+- Tabs
+  - [Chat Tab](tabs/tab_chat.md)
+  - [Documents Tab](tabs/tab_documents.md)
+  - [Download Tab](tabs/tab_download.md)
+  - [Setting Tab](tabs/tab_setting.md)
 
 ## Contribution
 

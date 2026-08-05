@@ -88,6 +88,7 @@ Recommend to choose yes, please type `n` if you do not want to.
 **Remember, they are downloaded, not installed yet. Please get into the Setting tab, switch the downloaded models, save and enjoy.**
 
 *Models that will be installed:*
+
 | Repo id                                          | Description                                                       |
 | ------------------------------------------------ | ----------------------------------------------------------------- |
 | unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-BF16.gguf | BF16 version of Qwen3.5 0.8B, used for llama.cpp                  |
