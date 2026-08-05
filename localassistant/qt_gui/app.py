@@ -140,9 +140,15 @@ class LocasApp(QWidget):
 
 def main():
     """The app ignition."""
+    current_dir = Path.cwd()
+    os.chdir(Path(__file__).parent)
+
     _app = QApplication(sys.argv)
     window = LocasApp() #pylint:disable=W0612:unused-variable
-    sys.exit(_app.exec())
+    exit_code: int = _app.exec()
+
+    os.chdir(current_dir)
+    sys.exit(exit_code)
 
 if __name__ == "__main__":
     main()
