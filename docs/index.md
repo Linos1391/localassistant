@@ -2,7 +2,7 @@
 
 <img src="https://github.com/Linos1391/localassistant/blob/main/docs/asset/preview.gif?raw=true" width="90%">
 
-**Localassistant - Your AI friend.**
+<strong>Localassistant - Your AI friend.</strong>
 
 </div>
 
