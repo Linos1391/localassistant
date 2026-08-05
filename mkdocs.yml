@@ -1,19 +1,18 @@
-site_name: LocalAssistant
+site_name: localassistant
 site_url: !ENV READTHEDOCS_CANONICAL_URL
 site_author: Linos1391
-site_description: LocalAssistant (locas) is an AI designed to be used in CLI. (Currently in development)
+site_description: Localassistant (locas) is just a local AI, and to me, is the local AI.
 
-copyright: Copyright &copy; 2024 - 2025 Linos1391
+copyright: Copyright &copy; 2024 - 2026 Linos1391
 
-repo_name: LocalAssistant
-repo_url: https://github.com/Linos1391/LocalAssistant
+repo_name: localassistant
+repo_url: https://github.com/Linos1391/localassistant
 
 nav:
-  - Home: index.md
+  - Home: home.md
   - Installation: installation.md
-  - Quick Start: quick_start.md
-  - Models: models.md
-  - Commands: commands.md
+  # - Models: models.md
+  # - Commands: commands.md
 
 extra_javascript:
   - javascript/readthedocs.js
