@@ -166,24 +166,20 @@ class Installer:
         """Setup the execute script so that localassistant can be used globally."""
         print("\nSetting up path.")
 
-        execute_content: str = (
-            ":; if [ -z 0 ]; then"
-            "\n  @echo off"
-            "\n  goto :WINDOWS"
-            "\nfi"
-            "\n"
-            "\n#UNIX"
-            f"\nsource '{env_path.resolve() / '.venv' / 'bin' / 'activate'}' ; locas $@"
-            "\nexit 0"
-            "\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-            "\n:WINDOWS"
-            f"\n'{env_path.resolve() / '.venv' / 'Scripts' / 'activate'}' && locas %*"
-        )
+        if sys.platform == "win32":
+            locas_executor: str = "locas.cmd"
+            content_executor: str = (
+                f"'{env_path.resolve() / '.venv' / 'Scripts' / 'activate'}' && locas %*"
+            )
+        else:
+            locas_executor: str = "locas"
+            content_executor: str = (
+                f"source '{env_path.resolve() / '.venv' / 'bin' / 'activate'}' ; locas $@"
+            )
 
-        locas_executor: str = "locas.cmd" if sys.platform == "win32" else "locas"
         locas_executor_path: Path = env_path / locas_executor
         with locas_executor_path.open("w", encoding="utf-8") as f:
-            f.write(execute_content)
+            f.write(content_executor)
             f.close()
 
         locas_existed = shutil.which("locas")
@@ -198,21 +194,20 @@ class Installer:
                 check=True, shell=True
             )
         else:
+            subprocess.run("chmod a+x locas", check=True, shell=True)
             rc_content: str = (
                 f"\nexport LocalAssistant={env_path};"
                  "\nexport PATH=$LocalAssistant:$PATH"
             )
-            if input("Detect Unix platform. Are you using bash? ([Y]/n)").lower() == "n":
+            if input("Detect Unix platform. Are you using bash? ([Y]/n): ").lower() == "n":
                 print(
                     "If so, please manually paste the following into your shell startup file "
                    f"(eg: .zshrc, etc.):\n{rc_content}"
                 )
 
             else:
-                subprocess.run(
-                    "chmod a+x locas;"
-                   f"echo '{rc_content}' >> ~/.bashrc;"
-                    "source ~/.bashrc", check=True, shell=True)
+                subprocess.run(f"echo '{rc_content}' >> ~/.bashrc;"
+                                "source ~/.bashrc", check=True, shell=True)
         return False
 
     @staticmethod
@@ -226,9 +221,9 @@ class Installer:
                 "from localassistant.utils import Setting, SettingKey;"
                 "setting = Setting();"
                 "setting.data.update({"
-                    f"SettingKey.LLAMA_CPP_BIN: {llama_path}"
+                    f"SettingKey.LLAMA_CPP_BIN: '{llama_path}'"
                 "});"
-                "Setting().update_setting_file()"
+                "setting.update_setting_file()"
 
             )
         ], check=True)

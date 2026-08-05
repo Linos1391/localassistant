@@ -47,7 +47,7 @@ classifiers=[
 ]
 
 [project.scripts]
-locas = "LocalAssistant.qt_gui.app:main"
+locas = "localassistant.qt_gui.app:main"
 
 [project.urls]
 Repository = "https://github.com/Linos1391/LocalAssistant.git"
