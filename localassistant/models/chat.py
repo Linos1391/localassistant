@@ -35,6 +35,8 @@ class LlamaCppServer(QProcess):
         port: int = Constant.DEFAULT_LLAMA_PORT
     ) -> None:
         super().__init__()
+        self.is_load: bool = False
+
         self.log_file: str = str(PATH.env / "llama.log")
         self.setStandardOutputFile(self.log_file, QIODevice.OpenModeFlag.Truncate)
         self.setStandardErrorFile(self.log_file, QIODevice.OpenModeFlag.Append)
@@ -103,6 +105,7 @@ class LlamaCppServer(QProcess):
                     time.sleep(0.1)
                     continue
                 if self.LOADED_PHRASE in line.lower():
+                    self.is_load = True
                     break
 
 class LocasAgent(Agent):
