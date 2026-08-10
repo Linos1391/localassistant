@@ -41,7 +41,7 @@ def _setting_tab_setup(self):
             self.setting.data.setdefault(SettingKey.TOKEN, "")
         )
         self._get(self, UILabel.SETTING_THEME).setCurrentText(
-            self.setting.data.setdefault(SettingKey.THEME, list_themes()[7])
+            self.setting.data.setdefault(SettingKey.THEME, Constant.DEFAULT_THEME)
         )
         apply_stylesheet(self, self.setting.data[SettingKey.THEME],
                          style=QStyleFactory.create("Fusion")) # type: ignore

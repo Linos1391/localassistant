@@ -9,6 +9,7 @@ from typing import Literal, Any
 import os
 import json
 
+from qt_material import list_themes
 from fastembed import TextEmbedding, SparseTextEmbedding, ImageEmbedding
 
 class LocasException(Exception):
@@ -82,7 +83,6 @@ class Constant:
 
     # ___For_model_loading_button___
     BUTTON_LOAD_MODEL = "Load models"
-    BUTTON_RELOAD_MODEL = "Reload models"
     BUTTON_UNLOAD_MODEL = "Unload models"
 
     # ___For_download_process___
@@ -95,6 +95,8 @@ class Constant:
     STAR_FORMAT = "(starred) {history_file}"
     STARRED_DIR = PATH.histories / "starred"
 
+    DEFAULT_MAX_CHAT_MESSAGE = 25
+    DEFAULT_MAX_HISTORY = 5
     DEFAULT_LLAMA_PORT = 8000
 
     TEMPLATE = (
@@ -143,9 +145,8 @@ class Constant:
     DEFAULT_TOP_K = 5
     DEFAULT_SCORE_THRESHOLD = 0.5
 
-    # ___For_setting___
-    DEFAULT_MAX_CHAT_MESSAGE = 25
-    DEFAULT_MAX_HISTORY = 5
+    # ___For_general_setting___
+    DEFAULT_THEME = "dark_teal.xml" if "dark_teal.xml" in list_themes() else list_themes()[0]
 
 
 @dataclass
