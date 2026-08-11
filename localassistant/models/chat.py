@@ -109,11 +109,7 @@ class LlamaCppServer(QProcess):
                     break
 
 class LocasAgent(Agent):
-    """Chat extension.
-
-    Args:
-        model_path (str): The path to model snapshot.
-    """
+    """Chat extension."""
     def __init__(
         self,
         port: int = Constant.DEFAULT_LLAMA_PORT,

@@ -39,6 +39,7 @@ class UILabel:
     RESET_BUTTON = "resetButton"
     CHAT_LOAD_BUTTON = "chatLoadButton"
     DOCS_LOAD_BUTTON = "docsLoadButton"
+    STEP_GENERATION_BUTTON = "stopGenerationButton"
 
 class StreamingDispatcher(QObject):
     """So that it wont freeze :("""
@@ -136,6 +137,7 @@ def _chat_tab_setup(self):
 
             agent_worker = Worker(fn=LocasAgent)
             agent_worker.kwargs = {
+                "port": self.setting.data[SettingKey.LLAMA_PORT],
                 "streaming_callback": __enqueue_streaming
             }
             agent_worker.signal.error_signal.connect(
