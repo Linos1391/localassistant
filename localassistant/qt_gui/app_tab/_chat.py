@@ -38,6 +38,8 @@ class UILabel:
     DOCS_BUTTON = "docsButton"
     RESET_BUTTON = "resetButton"
     CHAT_LOAD_BUTTON = "chatLoadButton"
+    DOCS_LOAD_BUTTON = "docsLoadButton"
+    STEP_GENERATION_BUTTON = "stopGenerationButton"
 
 class StreamingDispatcher(QObject):
     """So that it wont freeze :("""
@@ -70,6 +72,13 @@ def _chat_tab_setup(self):
                     system_message.setPlainText(f"Error reading file: {err}.")
 
     def __set_up_agent(do_func: Callable[[], None]):
+        def ___conditional_do_func(condition: bool, remove_func: Callable):
+            if condition:
+                do_func()
+                remove_func()
+
+        chat_load_button.setEnabled(False)
+
         if getattr(self, "agent", None) is None:
             model_meta: ModelMetadata = ModelGuide.AGENT.value
             model_name: str = self._get_model_name(model_meta.role[0], model_meta.url)
@@ -119,19 +128,33 @@ def _chat_tab_setup(self):
                 lambda err: (__chat_message_error(err, None, None))
             )
             llama_worker.signal.result_signal.connect(
-                lambda: (_remove(), chat_load_button.setText(Constant.BUTTON_RELOAD_MODEL))
+                lambda: (
+                    chat_load_button.setText(Constant.BUTTON_UNLOAD_MODEL),
+                    ___conditional_do_func(
+                        llama_server_process.is_loaded and hasattr(self, "agent"),
+                        _remove
+                    )
+                )
             )
             self.thread_pool.start(llama_worker)
 
             agent_worker = Worker(fn=LocasAgent)
             agent_worker.kwargs = {
+                "port": self.setting.data[SettingKey.LLAMA_PORT],
                 "streaming_callback": __enqueue_streaming
             }
             agent_worker.signal.error_signal.connect(
-                lambda err: (__chat_message_error(err, None, None))
+                lambda err: (__chat_message_error(err, None, None),
+                             chat_load_button.setEnabled(True))
             )
             agent_worker.signal.result_signal.connect(
-                lambda r: (setattr(self, "agent", r), do_func())
+                lambda r: (
+                    setattr(self, "agent", r),
+                    ___conditional_do_func(
+                        llama_server_process.is_loaded and hasattr(self, "agent"),
+                        _remove
+                    )
+                )
             )
             self.thread_pool.start(agent_worker)
 
@@ -216,7 +239,8 @@ def _chat_tab_setup(self):
             "An error just occur, I will keep in mind and continue the conversation.\n"
             f"{str(err[0].__name__)}: {str(err[1])}"
         ))
-        chat_history_box.setEnabled(True)
+        for widget in (chat_history_box, chat_load_button, docs_load_button):
+            widget.setEnabled(True)
 
     def __chat_message_result(final_output: str):
         LOGGER.info("Assistant: %s", final_output)
@@ -248,7 +272,8 @@ def _chat_tab_setup(self):
                     break
             __history_setup()
             chat_history_box.setCurrentText(file_name)
-        chat_history_box.setEnabled(True)
+        for widget in (chat_history_box, chat_load_button, docs_load_button):
+            widget.setEnabled(True)
 
     def __chat_streaming(chunk: StreamingChunk):
         if chunk.start:
@@ -280,8 +305,10 @@ def _chat_tab_setup(self):
         streaming_dispatcher.flush.emit()
 
     def __chat_message_enter(widget_box: QWidget):
+        for widget in (chat_history_box, chat_load_button, docs_load_button):
+            widget.setEnabled(False)
+
         def ___do():
-            chat_history_box.setEnabled(False)
             if chat_history_box.currentIndex() == 0:
                 self.agent.chat_message = [ChatMessage.from_system(system_message.toPlainText() + \
                                            Constant.REQUIRED_SYSTEM_MESSAGE)
@@ -461,19 +488,21 @@ def _chat_tab_setup(self):
             __chat_message_new()
         __set_up_agent(___do)
 
-    def __reload_agent():
+    def __load_or_unload_agent():
         if hasattr(self, "agent"):
             del self.agent
 
-        llama_server = None
-        for process in self.processes:
-            if isinstance(process, LlamaCppServer):
-                llama_server = process
-                break
-        if llama_server:
-            llama_server.kill_process_by_port(llama_server.port)
+            llama_server = None
+            for process in self.processes:
+                if isinstance(process, LlamaCppServer):
+                    llama_server = process
+                    break
+            if llama_server:
+                llama_server.kill_process_by_port(llama_server.port)
 
-        __set_up_agent(lambda: None)
+            chat_load_button.setText(Constant.BUTTON_LOAD_MODEL)
+        else:
+            __set_up_agent(lambda: chat_load_button.setEnabled(True))
 
     chat_scroll_area: QScrollArea = self._get(self, UILabel.CHAT_SCROLL_AREA)
     chat_scroll_contents: QBoxLayout = self._get(self, UILabel.CHAT_SCROLL_CONTENTS).layout()
@@ -481,6 +510,7 @@ def _chat_tab_setup(self):
     reset_button: QPushButton = self._get(self, UILabel.RESET_BUTTON)
     system_message: QPlainTextEdit = self._get(self, UILabel.SYSTEM_CHAT_MESSAGE)
     chat_load_button: QPushButton = self._get(self, UILabel.CHAT_LOAD_BUTTON)
+    docs_load_button: QPushButton = self._get(self, UILabel.DOCS_LOAD_BUTTON)
 
     __system_setup()
     __history_setup()
@@ -502,7 +532,7 @@ def _chat_tab_setup(self):
         _scrollbar.rangeChanged.connect(lambda _, val: __scroll_to_bottom(val))
     __chat_message_new()
 
-    chat_load_button.clicked.connect(__reload_agent)
+    chat_load_button.clicked.connect(__load_or_unload_agent)
 
     streaming_queue: queue.Queue[StreamingChunk] = queue.Queue()
     streaming_dispatcher = StreamingDispatcher(self)

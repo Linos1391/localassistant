@@ -25,9 +25,9 @@ class UILabel:
     DOCS_LOAD_BUTTON = "docsLoadButton"
 
 def _documents_tab_setup(self):
-    # from localassistant.qt_gui.app import App
-    # self = App() #TODO - cooking
     def __set_up_docs_model(do_func: Callable):
+        docs_load_button.setEnabled(False)
+
         if getattr(self, "docs", None) is None:
             docs_kwargs: dict = {
                 "port": self.setting.data.get(SettingKey.QDRANT_PORT, Constant.DEFAULT_QDRANT_PORT),
@@ -58,19 +58,21 @@ def _documents_tab_setup(self):
 
             docs_worker = Worker(fn=LocasDocs, **docs_kwargs)
             docs_worker.signal.error_signal.connect(
-                lambda err: (self._show_error(err), _remove())
+                lambda err: (self._show_error(err), _remove(), docs_load_button.setEnabled(True))
             )
             docs_worker.signal.result_signal.connect(
                 lambda r: (
                     setattr(self, "docs", r), _remove(),
                     docs_load_button.setText(Constant.BUTTON_UNLOAD_MODEL),
                     do_func(),
+                    docs_load_button.setEnabled(True),
                 )
             )
             self.thread_pool.start(docs_worker)
 
         else:
             do_func()
+            docs_load_button.setEnabled(True)
 
     def __docs_add():
         def ___do():

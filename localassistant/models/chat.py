@@ -35,6 +35,8 @@ class LlamaCppServer(QProcess):
         port: int = Constant.DEFAULT_LLAMA_PORT
     ) -> None:
         super().__init__()
+        self.is_loaded: bool = False
+
         self.log_file: str = str(PATH.env / "llama.log")
         self.setStandardOutputFile(self.log_file, QIODevice.OpenModeFlag.Truncate)
         self.setStandardErrorFile(self.log_file, QIODevice.OpenModeFlag.Append)
@@ -103,14 +105,11 @@ class LlamaCppServer(QProcess):
                     time.sleep(0.1)
                     continue
                 if self.LOADED_PHRASE in line.lower():
+                    self.is_loaded = True
                     break
 
 class LocasAgent(Agent):
-    """Chat extension.
-
-    Args:
-        model_path (str): The path to model snapshot.
-    """
+    """Chat extension."""
     def __init__(
         self,
         port: int = Constant.DEFAULT_LLAMA_PORT,
