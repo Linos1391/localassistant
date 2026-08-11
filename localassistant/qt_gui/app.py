@@ -87,7 +87,11 @@ class LocasApp(QWidget):
         alert.setStyleSheet("border: 3px solid #EE4B2B; padding: 10px;")
         tab_widget.insertWidget(0, alert)
 
-        return alert.deleteLater
+        def remove():
+            if alert:
+                alert.deleteLater()
+
+        return remove
 
     @staticmethod
     def _get(parent: Any, widget_name: str) -> Any:
