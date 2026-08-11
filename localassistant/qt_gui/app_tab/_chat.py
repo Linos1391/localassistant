@@ -72,9 +72,10 @@ def _chat_tab_setup(self):
                     system_message.setPlainText(f"Error reading file: {err}.")
 
     def __set_up_agent(do_func: Callable[[], None]):
-        def ___conditional_do_func(condition: bool):
+        def ___conditional_do_func(condition: bool, remove_func: Callable):
             if condition:
                 do_func()
+                remove_func()
 
         chat_load_button.setEnabled(False)
 
@@ -128,9 +129,11 @@ def _chat_tab_setup(self):
             )
             llama_worker.signal.result_signal.connect(
                 lambda: (
-                    _remove(),
                     chat_load_button.setText(Constant.BUTTON_UNLOAD_MODEL),
-                    ___conditional_do_func(llama_server_process.is_load and hasattr(self, "agent"))
+                    ___conditional_do_func(
+                        llama_server_process.is_loaded and hasattr(self, "agent"),
+                        _remove
+                    )
                 )
             )
             self.thread_pool.start(llama_worker)
@@ -147,7 +150,10 @@ def _chat_tab_setup(self):
             agent_worker.signal.result_signal.connect(
                 lambda r: (
                     setattr(self, "agent", r),
-                    ___conditional_do_func(llama_server_process.is_load and hasattr(self, "agent"))
+                    ___conditional_do_func(
+                        llama_server_process.is_loaded and hasattr(self, "agent"),
+                        _remove
+                    )
                 )
             )
             self.thread_pool.start(agent_worker)
