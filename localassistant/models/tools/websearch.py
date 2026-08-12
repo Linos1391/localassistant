@@ -1,18 +1,18 @@
 """The SERP tool for websearch."""
 import time
-from typing import Any
+import logging
+from typing import Literal
+import requests
 
-from haystack import Document
-from haystack.tools import ComponentTool
 from haystack.tools.from_function import create_tool_from_function
-from haystack.components.fetchers import LinkContentFetcher
-from haystack.components.converters import HTMLToDocument
-from haystack_integrations.components.websearch.ddgs import DDGSWebSearch
+from ddgs.ddgs import DDGS
 
 from localassistant.utils import Constant
 
-class WebSearch(DDGSWebSearch):
-    """Search engine with rate limit handler."""
+LOGGER = logging.getLogger(__name__)
+
+class WebSearchTool(DDGS):
+    """Container for tooling."""
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._latest_search: float = time.time()
@@ -24,36 +24,236 @@ class WebSearch(DDGSWebSearch):
             time.sleep(wait_time)
         self._latest_search = time.time()
 
-    def _search(
+    def search_text(
         self,
         query: str,
-        top_k: int | None = None,
-        backend: str | None = None,
-        region: str | None = None,
-        safesearch: str | None = None,
-        search_params: dict[str, Any] | None = None
-    ) -> dict[str, list[Document] | list[str]]:
-
-        self._rate_limit_handler()
-        return super()._search(query, top_k, backend, region, safesearch, search_params)
-
-    @staticmethod
-    def fetch_url(urls: list[str], user_agents: list[str] | None = None) -> list[Document]:
-        """
-        Fetch the urls provided. Can be used to get more detail information within a website.
+        region: str = "us-en",
+        safesearch: Literal["on", "moderate", "off"] = "moderate",
+        timelimit: Literal["d", "w", "m", "y"] | None = None,
+        max_results: int | None = Constant.SEARCH_LIMIT,
+        page: int = 1,
+        backend: str = "auto",
+    ) -> list[dict[str, str]]:
+        """DDGS web text metasearch.
 
         Args:
-            urls (list[str]): List of urls.
-            user_agents (list[str]|None): The user agents, completely separated, so must be 
-                                          provided every fetch.
+            query: text search query.
+            region: us-en, uk-en, ru-ru, etc.
+            safesearch: on, moderate, off.
+            timelimit: d, w, m, y.
+            max_results: maximum number of results.
+            page: page of results.
+            backend: A single or comma-delimited backends. Defaults to "auto" for ddgs to choose.
 
         Returns:
-            list[Document]: List of results.
+            List of dictionaries with search results.
         """
-        fetched = LinkContentFetcher(user_agents=user_agents).run(urls=urls).get("streams")
-        if fetched:
-            return HTMLToDocument().run(sources=fetched).get("documents", [])
-        return []
+        self._rate_limit_handler()
+        return self.text(
+            query, region=region, safesearch=safesearch, timelimit=timelimit,
+            max_results=max_results, page=page, backend=backend
+        )
 
-websearch_tools = [ComponentTool(component=WebSearch()),
-                   create_tool_from_function(WebSearch.fetch_url, name="fetch_url")]
+    def search_images(
+        self,
+        query: str,
+        region: str = "us-en",
+        safesearch: Literal["on", "moderate", "off"] = "moderate",
+        timelimit: Literal["d", "w", "m", "y"] | None = None,
+        max_results: int | None = Constant.SEARCH_LIMIT,
+        page: int = 1,
+        backend: str = "auto",
+        size: Literal["Small", "Medium", "Large", "Wallpaper"] | None = None,
+        color: Literal["Monochrome", "Red", "Orange", "Yellow", "Green", "Blue",
+                "Purple", "Pink", "Brown", "Black", "Gray", "Teal", "White"] | None = None,
+        type_image: Literal["photo", "clipart", "gif", "transparent", "line"] | None = None,
+        layout: Literal["Square", "Tall", "Wide"] | None = None,
+        license_image: Literal["any", "Public", "Share", "ShareCommercially", "Modify",
+                               "ModifyCommercially"] | None = None,
+    ):
+        """DDGS images metasearch.
+
+        Args:
+            query: images search query.
+            region: us-en, uk-en, ru-ru, etc.
+            safesearch: on, moderate, off.
+            timelimit: d, w, m, y.
+            max_results: maximum number of results.
+            page: page of results.
+            backend: A single or comma-delimited backends. Defaults to "auto" for ddgs to choose.
+            size: Small, Medium, Large, Wallpaper.
+            color: color, Monochrome, Red, Orange, Yellow, Green, Blue,
+                Purple, Pink, Brown, Black, Gray, Teal, White.
+            type_image: photo, clipart, gif, transparent, line.
+                Defaults to None.
+            layout: Square, Tall, Wide.
+            license_image:
+                any (All Creative Commons),
+                Public (PublicDomain),
+                Share (Free to Share and Use),
+                ShareCommercially (Free to Share and Use Commercially),
+                Modify (Free to Modify, Share, and Use),
+                ModifyCommercially (Free to Modify, Share, and Use Commercially).
+
+        Returns:
+            List of dictionaries with images search results.
+        """
+        self._rate_limit_handler()
+        return self.images(
+            query, region=region, safesearch=safesearch, timelimit=timelimit,
+            max_results=max_results, page=page, backend=backend, size=size, color=color,
+            type_image=type_image, layout=layout, license_image=license_image
+        )
+
+    def search_videos(
+        self,
+        query: str,
+        region: str = "us-en",
+        safesearch: Literal["on", "moderate", "off"] = "moderate",
+        timelimit: Literal["d", "w", "m", "y"] | None = None,
+        max_results: int | None = Constant.SEARCH_LIMIT,
+        page: int = 1,
+        backend: str = "auto",
+        resolution: Literal["high", "standard"] | None = None,
+        duration: Literal["short", "medium", "long"] | None = None,
+        license_videos: Literal["creativeCommon", "youtube"] | None = None,
+    ) -> list[dict[str, str]]:
+        """DDGS videos metasearch.
+
+        Args:
+            query: text search query.
+            region: us-en, uk-en, ru-ru, etc.
+            safesearch: on, moderate, off.
+            timelimit: d, w, m, y.
+            max_results: maximum number of results.
+            page: page of results.
+            backend: A single or comma-delimited backends. Defaults to "auto" for ddgs to choose.
+            resolution: high, standard. Defaults to None.
+            duration: short, medium, long. Defaults to None.
+            license_videos: creativeCommon, youtube. Defaults to None.
+
+        Returns:
+            List of dictionaries with videos search results.
+        """
+        self._rate_limit_handler()
+        return self.videos(
+            query, region=region, safesearch=safesearch, timelimit=timelimit,
+            max_results=max_results, page=page, backend=backend, resolution=resolution,
+            duration=duration, license_videos=license_videos
+        )
+
+    def search_news(
+        self,
+        query: str,
+        region: str = "us-en",
+        safesearch: Literal["on", "moderate", "off"] = "moderate",
+        timelimit: Literal["d", "w", "m", "y"] | None = None,
+        max_results: int | None = Constant.SEARCH_LIMIT,
+        page: int = 1,
+        backend: str = "auto",
+    ) -> list[dict[str, str]]:
+        """DDGS news metasearch.
+
+        Args:
+            query: text search query.
+            region: us-en, uk-en, ru-ru, etc.
+            safesearch: on, moderate, off.
+            timelimit: d, w, m, y.
+            max_results: maximum number of results.
+            page: page of results.
+            backend: A single or comma-delimited backends. Defaults to "auto" for ddgs to choose.
+
+        Returns:
+            List of dictionaries with search results.
+        """
+        self._rate_limit_handler()
+        return self.news(
+            query, region=region, safesearch=safesearch, timelimit=timelimit,
+            max_results=max_results, page=page, backend=backend
+        )
+
+    def search_books(
+        self,
+        query: str,
+        max_results: int | None = Constant.SEARCH_LIMIT,
+        page: int = 1,
+        backend: str = "auto",
+    ) -> list[dict[str, str]]:
+        """DDGS books metasearch.
+
+        Args:
+            query: text search query.
+            max_results: maximum number of results.
+            page: page of results.
+            backend: A single or comma-delimited backends. Defaults to "auto" for ddgs to choose.
+
+        Returns:
+            List of dictionaries with search results.
+        """
+        self._rate_limit_handler()
+        return self.books(
+            query, max_results=max_results, page=page, backend=backend
+        )
+
+    def extract_content(
+        self,
+        url: str,
+        fmt: Literal["text_markdown", "text_plain", "text_rich", "text",
+                     "content"] = "text_markdown",
+    ) -> dict[str, str | bytes]:
+        """Fetch a URL and extract its content.
+
+        Args:
+            url: The URL to fetch and extract content from.
+            fmt: Output format:
+                "text_markdown" (HTML→Markdown, preserves links/headers/lists),
+                "text_plain" (HTML→plain text),
+                "text_rich" (HTML→rich text with headers/lists),
+                "text" (raw HTML),
+                "content" (raw bytes).
+
+        Returns:
+            Dictionary with 'url' and 'content' keys.
+        """
+        self._rate_limit_handler()
+        return self.extract(url, fmt)
+
+    @staticmethod
+    def _check_valid_proxy(proxy: str, timeout: int = 5):
+        proxies = {
+            "http": proxy,
+            "https": proxy
+        }
+
+        try:
+            # Fetch the IP as seen by the target serves
+            response = requests.get("https://httpbin.org/ip", proxies=proxies, timeout=timeout)
+
+            if response.status_code == 200:
+                exit_ip = response.json().get('origin')
+                return True, exit_ip
+            else:
+                return False, None
+
+        except requests.exceptions.RequestException as e:
+            return False, str(e)
+
+    @staticmethod
+    def get_tools(proxy: str | None = None):
+        """Get the correlated tools."""
+        if proxy:
+            valid, result = WebSearchTool._check_valid_proxy(proxy)
+            if not valid:
+                LOGGER.exception("Connect with proxy unsuccessfully with error: %s", result)
+                return []
+            LOGGER.info("Connect with proxy successfully, used IP is: %s", result)
+
+        websearch = WebSearchTool(proxy=proxy)
+        return [
+            create_tool_from_function(websearch.search_text),
+            create_tool_from_function(websearch.search_images),
+            create_tool_from_function(websearch.search_videos),
+            create_tool_from_function(websearch.search_news),
+            create_tool_from_function(websearch.search_books),
+            create_tool_from_function(websearch.extract_content)
+        ]
