@@ -48,7 +48,7 @@ class StreamingDispatcher(QObject):
     """So that it wont freeze :("""
     flush = pyqtSignal()
 
-class QtHumanInTheLoop(QObject): #FIXME
+class QtHumanInTheLoop(QObject):
     """Human in the loop. Yes just as we all need"""
     show_dialog = pyqtSignal(str, str, dict)
 

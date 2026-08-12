@@ -9,7 +9,6 @@ from datetime import datetime
 import psutil
 
 from PyQt6.QtCore import QProcess, QIODevice
-from PyQt6.QtWidgets import QDialog, QApplication
 
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators.chat import OpenAIChatGenerator
