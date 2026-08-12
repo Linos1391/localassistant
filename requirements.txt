@@ -16,7 +16,7 @@ animflow
 huggingface-hub
 
 # For web-searching
-ddgs-haystack
+ddgs
 
 # For docs retrieving:
 fastembed-haystack
