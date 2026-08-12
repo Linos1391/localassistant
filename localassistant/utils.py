@@ -67,6 +67,7 @@ class UIFiles:
     # Chat tab.
     CHAT_USER = "chat_user.ui"
     CHAT_ASSISTANT = "chat_assistant.ui"
+    CHAT_HITL = "chat_hitl.ui"
 
     # Download tab.
     DOWNLOAD_MODEL = "download_model.ui"
@@ -105,16 +106,14 @@ class Constant:
     TEMPLATE = (
         "Provide response with the following information (or access the tools for more)."
         "\n"
-        "\nThese are the text-only documents:"
         "\n{%- if documents|length > 0 %}"
+        "\nThese are the text-only documents:"
         "\n{%- for doc in documents %}"
         "\nText Document ({{ doc.meta.get('file_path') }}) [{{ loop.index }}] :"
         "\n{{ doc.content }}"
         "\n{% endfor -%}"
-        "\n{%- else %}"
-        "\nNo relevant text documents were found."
-        "\n{% endif %}"
         "\nEnd of text documents."
+        "\n{% endif %}"
         "\n"
         "\nYour current emotion: {{emotion}}."
         "\n"

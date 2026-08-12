@@ -43,7 +43,6 @@ class LocasApp(QWidget):
         self._load_ui(UIFiles.ERROR, self.error_box)
         self._get(self.error_box, UILabel.CLOSED_BUTTON).clicked.connect(self.error_box.hide)
 
-        self.current_tool_call: str = ""
         self.current_assistant_message: str = ""
         self.current_assistant_box: MessageTextEdit
 

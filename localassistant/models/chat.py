@@ -1,3 +1,4 @@
+#pylint:disable=E0611:no-name-in-module
 """Chat models."""
 import os
 from pathlib import Path
@@ -5,16 +6,21 @@ import socket
 import logging
 import time
 from datetime import datetime
-
 import psutil
 
-from PyQt6.QtCore import QProcess, QIODevice #pylint:disable=E0611:no-name-in-module
+from PyQt6.QtCore import QProcess, QIODevice
 
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.components.agents import Agent
 from haystack.dataclasses import ChatMessage, ChatRole, StreamingCallbackT, StreamingChunk #pylint:disable=W0611:unused-import
 from haystack.utils import Secret
+from haystack.hooks.human_in_the_loop import (
+    ConfirmationHook,
+    BlockingConfirmationStrategy,
+    AlwaysAskPolicy
+)
+from haystack.hooks.human_in_the_loop.types import ConfirmationUI
 
 from localassistant.models.tools import toolset
 from localassistant.utils import LocasException, UtilsMethod, Constant, PATH
@@ -112,6 +118,7 @@ class LocasAgent(Agent):
     """Chat extension."""
     def __init__(
         self,
+        confirmation_ui: ConfirmationUI,
         port: int = Constant.DEFAULT_LLAMA_PORT,
         streaming_callback: StreamingCallbackT | None = None,
         **generation_kwargs
@@ -133,6 +140,17 @@ class LocasAgent(Agent):
             ),
             streaming_callback=streaming_callback,
             tools=toolset,
+            hooks={
+                "before_tool": [
+                    ConfirmationHook(
+                        # The "*" key applies this strategy to every tool
+                        confirmation_strategies={"*": BlockingConfirmationStrategy(
+                            confirmation_policy=AlwaysAskPolicy(),
+                            confirmation_ui=confirmation_ui
+                        )}
+                    ),
+                ],
+            },
         )
         self.warm_up()
 
