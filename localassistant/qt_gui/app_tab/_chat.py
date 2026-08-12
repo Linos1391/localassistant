@@ -6,12 +6,13 @@ import logging
 import shutil
 import re
 import queue
-from typing import Callable
+import threading
+from typing import Callable, Literal, Any
 
 from haystack.components.converters.image import ImageFileToImageContent
-
-from PyQt6.QtWidgets import (QWidget, QPushButton, QPlainTextEdit, QComboBox, QBoxLayout,
-                             QScrollArea, QFileDialog, QListWidget)
+from haystack.hooks.human_in_the_loop import ConfirmationUIResult
+from PyQt6.QtWidgets import (QWidget, QPushButton, QPlainTextEdit, QComboBox, QBoxLayout, QTextEdit,
+                             QScrollArea, QFileDialog, QListWidget, QDialog, QDialogButtonBox)
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent, QStandardItemModel
 from PyQt6.QtCore import QObject, QModelIndex, pyqtSignal, pyqtSlot
 
@@ -40,10 +41,65 @@ class UILabel:
     CHAT_LOAD_BUTTON = "chatLoadButton"
     DOCS_LOAD_BUTTON = "docsLoadButton"
     STEP_GENERATION_BUTTON = "stopGenerationButton"
+    TOOL_BUTTON = "toolButton"
+    TOOL_DESCRIPTION = "toolDescription"
 
 class StreamingDispatcher(QObject):
     """So that it wont freeze :("""
     flush = pyqtSignal()
+
+class QtHumanInTheLoop(QObject): #FIXME
+    """Human in the loop. Yes just as we all need"""
+    show_dialog = pyqtSignal(str, str, dict)
+
+    def __init__(self, self_widget) -> None:
+        super().__init__()
+        self.action: Literal["confirm", "reject"] = "confirm"
+        self._result_ready = threading.Event()
+        self._result: ConfirmationUIResult | None = None
+
+        self.dialog = QDialog(self_widget)
+        self_widget._load_ui(UIFiles.CHAT_HITL, self.dialog)
+        self.description: QTextEdit = self_widget._get(self.dialog, UILabel.TOOL_DESCRIPTION)
+
+        button_box: QDialogButtonBox = self_widget._get(self.dialog, UILabel.TOOL_BUTTON)
+        button_box.accepted.connect(lambda: self._complete("confirm"))
+        button_box.rejected.connect(lambda: self._complete("reject"))
+
+        self.show_dialog.connect(self._show_dialog)
+
+    def _complete(self, action: Literal["confirm", "reject"]) -> None:
+        self.action = action
+        self._result = ConfirmationUIResult(action=action)
+        self._result_ready.set()
+        self.dialog.accept()
+
+    @pyqtSlot(str, str, dict)
+    def _show_dialog(self, tool_name: str, tool_description: str,
+                     tool_params: dict[str, Any]) -> None:
+        self.description.setMarkdown(
+            f"**TOOL NAME:** {tool_name}"
+            f"{Constant.MESSAGE_LINE_BREAK}"
+            f"**TOOL PARAMS:** {tool_params}"
+            f"{Constant.MESSAGE_LINE_BREAK}"
+            f"**TOOL DESCRIPTION:** {tool_description}"
+        )
+        self.dialog.open()
+
+    def get_user_confirmation(
+        self,
+        tool_name: str,
+        tool_description: str,
+        tool_params: dict[str, Any]
+    ) -> ConfirmationUIResult:
+        """Required for it."""
+        self._result_ready.clear()
+        self._result = None
+
+        self.show_dialog.emit(tool_name, tool_description, tool_params)
+
+        self._result_ready.wait()
+        return self._result or ConfirmationUIResult(action=self.action)
 
 def _chat_tab_setup(self):
     def __system_setup():
@@ -140,6 +196,7 @@ def _chat_tab_setup(self):
 
             agent_worker = Worker(fn=LocasAgent)
             agent_worker.kwargs = {
+                "confirmation_ui": tool_confirmation_ui,
                 "port": self.setting.data[SettingKey.LLAMA_PORT],
                 "streaming_callback": __enqueue_streaming
             }
@@ -291,10 +348,8 @@ def _chat_tab_setup(self):
         elif chunk.tool_calls:
             tool_call = chunk.tool_calls[0]
             if tool_call.tool_name:
-                self.current_tool_call = tool_call.tool_name
                 self.current_assistant_message += f"**TOOL CALL:** {tool_call.tool_name}"
             if tool_call.arguments:
-                self.current_tool_call += tool_call.arguments
                 self.current_assistant_message += tool_call.arguments
         elif chunk.tool_call_result:
             LOGGER.info("TOOL CALL: %s", chunk.tool_call_result.origin)
@@ -304,7 +359,6 @@ def _chat_tab_setup(self):
 
             if len(result) > Constant.TOOL_RESULT_LENGTH_LIMIT:
                 result = f"{result[:Constant.TOOL_RESULT_LENGTH_LIMIT]}..."
-            self.current_tool_call = ""
             self.current_assistant_message += f"**TOOL RESULT:** {result}"
 
         self.current_assistant_box.setMarkdown(self.current_assistant_message)
@@ -529,6 +583,8 @@ def _chat_tab_setup(self):
         if hasattr(self, "agent"):
             self.agent.close()
             self.agent.warm_up()
+
+    tool_confirmation_ui = QtHumanInTheLoop(self)
 
     chat_scroll_area: QScrollArea = self._get(self, UILabel.CHAT_SCROLL_AREA)
     chat_scroll_contents: QBoxLayout = self._get(self, UILabel.CHAT_SCROLL_CONTENTS).layout()
