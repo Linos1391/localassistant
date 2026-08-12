@@ -5,7 +5,7 @@ import glob
 
 from haystack.tools.from_function import create_tool_from_function
 
-# TODO - exec_shell_command, write_file, edit_file - After Human in the loop done.
+# TODO - exec_shell_command, write_file, edit_file - After Human in the loop done. Yes.
 
 class SystemTool():
     """Alternative for llama.cpp tools - For human in the loop."""
