@@ -49,9 +49,6 @@ class LlamaCppServer(QProcess):
             "--model", model_path,
             "--port", str(port),
             "--image-min-tokens", "1024", "--no-ui"
-            # Tools available
-            # - read_file, file_glob_search, grep_search,
-            # - exec_shell_command, write_file, edit_file, get_datetime
         ]
         if mmproj_path:
             llama_arguments += ["--mmproj", mmproj_path]
