@@ -194,6 +194,16 @@
           </spacer>
          </item>
          <item>
+          <widget class="QPushButton" name="stopGenerationButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Stop Generation</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="chatLoadButton">
            <property name="text">
             <string>Load models</string>
@@ -403,7 +413,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>530</width>
+            <width>378</width>
             <height>466</height>
            </rect>
           </property>
