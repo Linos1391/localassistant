@@ -9,8 +9,6 @@ from threading import Thread
 
 from haystack.tools.from_function import create_tool_from_function
 
-# TODO - exec_shell_command, write_file, edit_file - After Human in the loop done. Yes.
-
 class SystemTool():
     """Alternative for llama.cpp tools - For human in the loop."""
     def __init__(self, backup: bool) -> None:
@@ -84,7 +82,7 @@ class SystemTool():
             file.close()
         return content
 
-    def write_file(self, file_path: str, contents: list[str]) -> bool | Exception:
+    def write_file(self, file_path: str, contents: list[str]) -> bool:
         """Write to the provided file the contents provided.
 
         Args:
@@ -92,23 +90,20 @@ class SystemTool():
             contents (list[str]): List of line to write to file.
 
         Returns:
-            bool | Exception: Return True if success. Else return the error.
+            bool: Return True if success.
         """
-        try:
-            path: Path = Path(file_path)
-            if self.backup:
-                path.copy(path.parent / f"{path.stem}.bak")
+        path: Path = Path(file_path)
+        if self.backup:
+            path.copy(path.parent / f"{path.stem}.bak")
 
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with open(file_path, 'x', encoding="utf-8") as file:
-                file.writelines(contents)
-                file.close()
-            return True
-        except Exception as err: #pylint:disable=W0718:broad-exception-caught
-            return err
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(file_path, 'x', encoding="utf-8") as file:
+            file.writelines(contents)
+            file.close()
+        return True
 
     def edit_file(self, file_path: str, contents: list[str],
-                  start: int = 0, end: int | None = None) -> bool | Exception:
+                  start: int = 0, end: int | None = None) -> bool:
         """Edit to the provided file the contents provided. Functioning same as python slicing.
 
         Args:
@@ -118,26 +113,23 @@ class SystemTool():
             end (int | None): Line to end, must be positive, default to None as the end of file.
 
         Returns:
-            bool | Exception: Return True if success. Else return the error.
+            bool: Return True if success.
         """
-        try:
-            path: Path = Path(file_path)
-            if self.backup:
-                path.copy(path.parent / f"{path.stem}.bak")
+        path: Path = Path(file_path)
+        if self.backup:
+            path.copy(path.parent / f"{path.stem}.bak")
 
-            prefix_contents = suffix_contents = []
-            if start:
-                prefix_contents: list[str] = self.read_file(file_path, 0, start)
-            if end:
-                suffix_contents: list[str] = self.read_file(file_path, end)
+        prefix_contents = suffix_contents = []
+        if start:
+            prefix_contents: list[str] = self.read_file(file_path, 0, start)
+        if end:
+            suffix_contents: list[str] = self.read_file(file_path, end)
 
-            with open(file_path, 'w', encoding="utf-8") as file:
-                for content in (prefix_contents, contents, suffix_contents):
-                    file.writelines(content)
-                file.close()
-            return True
-        except Exception as err: #pylint:disable=W0718:broad-exception-caught
-            return err
+        with open(file_path, 'w', encoding="utf-8") as file:
+            for content in (prefix_contents, contents, suffix_contents):
+                file.writelines(content)
+            file.close()
+        return True
 
     @staticmethod
     def _stream_output(proc: subprocess.Popen, output: list[str]):
@@ -163,7 +155,7 @@ class SystemTool():
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
-            bufsize=1
+            bufsize=1,
         )
         captured_output: list[str] = []
 
@@ -188,5 +180,6 @@ class SystemTool():
             create_tool_from_function(system.grep_search),
             create_tool_from_function(system.read_file),
             create_tool_from_function(system.write_file),
-            create_tool_from_function(system.edit_file)
+            create_tool_from_function(system.edit_file),
+            create_tool_from_function(system.exec_shell_command)
         ]
