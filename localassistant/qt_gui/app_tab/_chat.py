@@ -21,7 +21,7 @@ from localassistant.models.chat import (LlamaCppServer, LocasAgent, ChatMessage,
                                         StreamingChunk)
 from localassistant.models.docs import LocasDocs
 from localassistant.utils import (Constant, ModelGuide, ModelMetadata, UIFiles, SettingKey,
-                                  PATH)
+                                  PATH, LocasException)
 from localassistant.qt_gui.worker import Worker
 from localassistant.qt_gui.item_button_delegate import ItemButtonDelegate
 
@@ -229,7 +229,11 @@ def _chat_tab_setup(self):
     def __chat_message_error(err: tuple,
                              user_box: QWidget | None,
                              assistant_box: QWidget | None):
-        self._show_error(err)
+        if str(err[1]) == "[Errno 9] Bad file descriptor": # Got when stop generating
+            err = (LocasException, "User stops generating.")
+        else:
+            self._show_error(err)
+
         if user_box:
             self._get(user_box, UILabel.USER_CHAT_MESSAGE).setReadOnly(False)
         if getattr(self, "agent", None) is None or assistant_box is None:
@@ -237,10 +241,11 @@ def _chat_tab_setup(self):
         assistant_box.deleteLater()
         self.agent.chat_message.append(ChatMessage.from_assistant(
             "An error just occur, I will keep in mind and continue the conversation.\n"
-            f"{str(err[0].__name__)}: {str(err[1])}"
+            f"{str(err[0].__name__)}: {str(err[1])}" # type: ignore
         ))
         for widget in (chat_history_box, chat_load_button, docs_load_button):
             widget.setEnabled(True)
+        stop_generation_button.setEnabled(False)
 
     def __chat_message_result(final_output: str):
         LOGGER.info("Assistant: %s", final_output)
@@ -274,11 +279,11 @@ def _chat_tab_setup(self):
             chat_history_box.setCurrentText(file_name)
         for widget in (chat_history_box, chat_load_button, docs_load_button):
             widget.setEnabled(True)
+        stop_generation_button.setEnabled(False)
 
     def __chat_streaming(chunk: StreamingChunk):
         if chunk.start:
-            self.current_assistant_message = ""
-            self.current_assistant_box.clear()
+            self.current_assistant_message += Constant.MESSAGE_LINE_BREAK
         if chunk.content:
             self.current_assistant_message += chunk.content
         elif chunk.reasoning:
@@ -286,9 +291,22 @@ def _chat_tab_setup(self):
         elif chunk.tool_calls:
             tool_call = chunk.tool_calls[0]
             if tool_call.tool_name:
-                self.current_assistant_message += tool_call.tool_name
+                self.current_tool_call = tool_call.tool_name
+                self.current_assistant_message += f"**TOOL CALL:** {tool_call.tool_name}"
             if tool_call.arguments:
+                self.current_tool_call += tool_call.arguments
                 self.current_assistant_message += tool_call.arguments
+        elif chunk.tool_call_result:
+            LOGGER.info("TOOL CALL: %s", chunk.tool_call_result.origin)
+
+            result = chunk.tool_call_result.result
+            LOGGER.info("TOOL RESULT: %s", result)
+
+            if len(result) > Constant.TOOL_RESULT_LENGTH_LIMIT:
+                result = f"{result[:Constant.TOOL_RESULT_LENGTH_LIMIT]}..."
+            self.current_tool_call = ""
+            self.current_assistant_message += f"**TOOL RESULT:** {result}"
+
         self.current_assistant_box.setMarkdown(self.current_assistant_message)
 
     @pyqtSlot()
@@ -309,10 +327,10 @@ def _chat_tab_setup(self):
             widget.setEnabled(False)
 
         def ___do():
+            stop_generation_button.setEnabled(True)
             if chat_history_box.currentIndex() == 0:
                 self.agent.chat_message = [ChatMessage.from_system(system_message.toPlainText() + \
-                                           Constant.REQUIRED_SYSTEM_MESSAGE)
-                ]
+                                           Constant.REQUIRED_SYSTEM_MESSAGE)]
 
             user_docs: dict = LocasDocs.analyze_docs(self.agent.docs)
             user_text = self._get(widget_box, UILabel.USER_CHAT_MESSAGE).toPlainText()
@@ -346,6 +364,7 @@ def _chat_tab_setup(self):
             assistant_box = QWidget()
             self._load_ui(UIFiles.CHAT_ASSISTANT, assistant_box)
             chat_scroll_contents.insertWidget(chat_scroll_contents.count() - 1, assistant_box)
+            self.current_assistant_message = ""
             self.current_assistant_box = self._get(assistant_box, UILabel.ASSISTANT_CHAT_MESSAGE)
             worker = Worker(
                 fn=self.agent.agent_chat,
@@ -486,6 +505,8 @@ def _chat_tab_setup(self):
                         )
                 chat_scroll_contents.insertWidget(chat_scroll_contents.count() - 1, widget_box)
             __chat_message_new()
+            chat_load_button.setEnabled(True)
+
         __set_up_agent(___do)
 
     def __load_or_unload_agent():
@@ -504,11 +525,17 @@ def _chat_tab_setup(self):
         else:
             __set_up_agent(lambda: chat_load_button.setEnabled(True))
 
+    def __chat_stop_generation():
+        if hasattr(self, "agent"):
+            self.agent.close()
+            self.agent.warm_up()
+
     chat_scroll_area: QScrollArea = self._get(self, UILabel.CHAT_SCROLL_AREA)
     chat_scroll_contents: QBoxLayout = self._get(self, UILabel.CHAT_SCROLL_CONTENTS).layout()
     chat_history_box: QComboBox = self._get(self, UILabel.CHAT_HISTORY)
     reset_button: QPushButton = self._get(self, UILabel.RESET_BUTTON)
     system_message: QPlainTextEdit = self._get(self, UILabel.SYSTEM_CHAT_MESSAGE)
+    stop_generation_button: QPushButton = self._get(self, UILabel.STEP_GENERATION_BUTTON)
     chat_load_button: QPushButton = self._get(self, UILabel.CHAT_LOAD_BUTTON)
     docs_load_button: QPushButton = self._get(self, UILabel.DOCS_LOAD_BUTTON)
 
@@ -533,6 +560,7 @@ def _chat_tab_setup(self):
     __chat_message_new()
 
     chat_load_button.clicked.connect(__load_or_unload_agent)
+    stop_generation_button.clicked.connect(__chat_stop_generation)
 
     streaming_queue: queue.Queue[StreamingChunk] = queue.Queue()
     streaming_dispatcher = StreamingDispatcher(self)

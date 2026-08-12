@@ -8,6 +8,7 @@ class MessageTextEdit(QTextBrowser):
     """Custom widget for auto-resizing."""
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAutoFormatting(self.AutoFormattingFlag.AutoAll)
         self.textChanged.connect(self._auto_resize)
 
     def _auto_resize(self):

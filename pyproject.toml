@@ -9,7 +9,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "animflow>=0.2.2",
-    "ddgs-haystack>=1.1.0",
+    "ddgs>=9.14.4",
     "fastembed-haystack>=2.3.0",
     "haystack-ai>=2.26.1",
     "huggingface-hub>=1.27.0",

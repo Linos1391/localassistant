@@ -148,6 +148,7 @@ class LocasAgent(Agent):
             chat_message = self.chat_message
 
         result = self.run(chat_message)
+
         self.chat_message = result.get("messages", [])
         last_message = result.get("last_message")
 
