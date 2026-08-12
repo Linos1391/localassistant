@@ -505,6 +505,8 @@ def _chat_tab_setup(self):
                         )
                 chat_scroll_contents.insertWidget(chat_scroll_contents.count() - 1, widget_box)
             __chat_message_new()
+            chat_load_button.setEnabled(True)
+
         __set_up_agent(___do)
 
     def __load_or_unload_agent():
