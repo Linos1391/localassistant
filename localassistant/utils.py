@@ -95,6 +95,9 @@ class Constant:
     STAR_FORMAT = "(starred) {history_file}"
     STARRED_DIR = PATH.histories / "starred"
 
+    MESSAGE_LINE_BREAK = " \n \n "
+    TOOL_RESULT_LENGTH_LIMIT = 200
+
     DEFAULT_MAX_CHAT_MESSAGE = 25
     DEFAULT_MAX_HISTORY = 5
     DEFAULT_LLAMA_PORT = 8000
@@ -138,6 +141,8 @@ class Constant:
 
     # ___For_agent_tools___
     INTERVAL_PER_SEARCH = 1.0 # second
+    SEARCH_TIMEOUT = 5
+    SEARCH_LIMIT = 5
 
     # ___For_docs_function___
     DEFAULT_QDRANT_PORT = 6333
