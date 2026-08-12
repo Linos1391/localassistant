@@ -67,6 +67,7 @@ class UIFiles:
     # Chat tab.
     CHAT_USER = "chat_user.ui"
     CHAT_ASSISTANT = "chat_assistant.ui"
+    CHAT_HITL = "chat_hitl.ui"
 
     # Download tab.
     DOWNLOAD_MODEL = "download_model.ui"
