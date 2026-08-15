@@ -58,7 +58,7 @@ All version that got published will be shown. Choose the one that fill your need
 ### Question 3: Paste Llama.cpp bin path *(Skipped if upgrading)*
 
 ```
-Paste in the path to installed llama.cpp bin (.../build/bin):
+Paste in the path to installed llama.cpp bin (.../build/bin or ...\build\bin\Release):
 ```
 
 Paste the Llama.cpp bin path you just installed. Remember, it is essential or else the app will fail.
