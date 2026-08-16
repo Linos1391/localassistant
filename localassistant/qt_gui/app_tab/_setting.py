@@ -2,11 +2,12 @@
 """The Setting tab."""
 import logging
 
-from PyQt6.QtWidgets import QStyleFactory, QComboBox, QWidget, QLayout, QSizePolicy
+from PyQt6.QtWidgets import QStyleFactory, QComboBox, QWidget, QLayout, QSizePolicy, QVBoxLayout
 
 from pyqt6_multiselect_combobox import MultiSelectComboBox
 from qt_material import apply_stylesheet, list_themes
 
+from localassistant.models.tools import ToolPolicy, ToolValidator
 from localassistant.utils import (ModelGuide, ModelMetadata, UtilsMethod, Constant, SettingKey,
                                   UIFiles)
 
@@ -26,6 +27,9 @@ class UILabel:
     SETTING_QDRANT_LOAD = "settingQdrantLoad"
     SETTING_TOP_K = "settingTopK"
     SETTING_SCORE_THRESHOLD = "settingScoreThreshold"
+    SETTING_DDGS_PROXY = "settingDdgsProxy"
+    SETTING_WRITE_BACKUP = "settingWriteBackup"
+    SETTING_EDIT_BACKUP = "settingEditBackup"
     MODEL_ROLE_LABEL = "modelRoleLabel"
     MODEL_COMBO_BOX = "modelComboBox"
     MODEL_GROUP_BOX = "modelGroupBox"
@@ -33,6 +37,15 @@ class UILabel:
     CACHE_BUTTON = "cacheButton"
 
 def _setting_tab_setup(self):
+    def __setting_clear_layout(layout: QLayout):
+        if layout:
+            while layout.count():
+                item = layout.takeAt(0)
+                if item:
+                    widget = item.widget()
+                    if widget:
+                        widget.deleteLater()
+
     def __setting_setup():
         self._get(self, UILabel.SETTING_TOKEN).setText(
             self.setting.data.setdefault(SettingKey.TOKEN, "")
@@ -81,15 +94,49 @@ def _setting_tab_setup(self):
                                          Constant.DEFAULT_SCORE_THRESHOLD)
         )
 
+        # Toolset tab.
+        self._get(self, UILabel.SETTING_DDGS_PROXY).setText(str(
+            self.setting.data.setdefault(SettingKey.DDGS_PROXY, "")
+        ))
+        self._get(self, UILabel.SETTING_WRITE_BACKUP).setChecked(
+            self.setting.data.setdefault(SettingKey.WRITE_BACKUP, False)
+        )
+        self._get(self, UILabel.SETTING_EDIT_BACKUP).setChecked(
+            self.setting.data.setdefault(SettingKey.EDIT_BACKUP, False)
+        )
+
+        self.setting.data.setdefault(SettingKey.TOOL_POLICY, {})
+        for tool_tab_title, tool_names in ToolValidator.get_all_tool_names().items():
+            toolset_group_box: QVBoxLayout = self._get(self, tool_tab_title).layout()
+            __setting_clear_layout(toolset_group_box)
+
+            for tool_name in tool_names:
+                widget_box = QWidget()
+                self._load_ui(UIFiles.SETTING_MODEL, widget_box)
+                self._get(widget_box, UILabel.MODEL_ROLE_LABEL).setText(
+                    tool_name.replace("_", " ").title()
+                )
+
+                widget_layout = widget_box.layout()
+                if not widget_layout:
+                    continue
+
+                tool_combo_box = QComboBox()
+                tool_combo_box.setSizePolicy(
+                    QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+                )
+                tool_combo_box.addItems([policy.name for policy in ToolPolicy])
+                tool_combo_box.setCurrentText(self.setting.data[SettingKey.TOOL_POLICY].setdefault(
+                    tool_name, ToolPolicy.ALWAYS_ASK.name
+                ))
+                widget_layout.addWidget(tool_combo_box)
+                toolset_group_box.addWidget(widget_box)
+
+                self.setting_toolset_combo_box.update({tool_name: tool_combo_box})
+
         # Models tab.
         self.setting.data.setdefault(SettingKey.MODELS, {})
-        if setting_model_groupbox:
-            while setting_model_groupbox.count():
-                item = setting_model_groupbox.takeAt(0)
-                if item:
-                    widget = item.widget()
-                    if widget:
-                        widget.deleteLater()
+        __setting_clear_layout(setting_model_groupbox)
 
         for _model_enum in ModelGuide:
             model_meta: ModelMetadata = _model_enum.value
@@ -126,7 +173,12 @@ def _setting_tab_setup(self):
         self.setting.update_setting_file()
 
     def __setting_save():
-        setting_models: dict = {} # A safe boat for future update. (I broke the app once so.....)
+        setting_tool_policy: dict = {}
+        for tool_name, tool_combo_box in self.setting_toolset_combo_box.items():
+            if tool_combo_box:
+                setting_tool_policy.update({tool_name: tool_combo_box.currentText()})
+
+        setting_models: dict = {}
         for role in self.setting.data[SettingKey.MODELS]:
             model_combo_box = self.setting_model_combo_box.get(role)
             if model_combo_box:
@@ -144,6 +196,10 @@ def _setting_tab_setup(self):
             SettingKey.QDRANT_LOAD: self._get(self,UILabel.SETTING_QDRANT_LOAD).isChecked(),
             SettingKey.TOP_K: self._get(self, UILabel.SETTING_TOP_K).value(),
             SettingKey.SCORE_THRESHOLD: self._get(self, UILabel.SETTING_SCORE_THRESHOLD).value(),
+            SettingKey.DDGS_PROXY: self._get(self, UILabel.SETTING_DDGS_PROXY).text(),
+            SettingKey.WRITE_BACKUP: self._get(self, UILabel.SETTING_WRITE_BACKUP).isChecked(),
+            SettingKey.EDIT_BACKUP:self._get(self, UILabel.SETTING_EDIT_BACKUP).isChecked(),
+            SettingKey.TOOL_POLICY: setting_tool_policy,
             SettingKey.MODELS: setting_models,
         })
         __setting_setup()

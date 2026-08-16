@@ -15,14 +15,8 @@ from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.components.agents import Agent
 from haystack.dataclasses import ChatMessage, ChatRole, StreamingCallbackT, StreamingChunk #pylint:disable=W0611:unused-import
 from haystack.utils import Secret
-from haystack.hooks.human_in_the_loop import (
-    ConfirmationHook,
-    BlockingConfirmationStrategy,
-    AlwaysAskPolicy
-)
-from haystack.hooks.human_in_the_loop.types import ConfirmationUI
+from haystack.tools import Toolset
 
-from localassistant.models.tools import toolset
 from localassistant.utils import LocasException, UtilsMethod, Constant, PATH
 
 LOGGER = logging.getLogger(__name__)
@@ -118,7 +112,8 @@ class LocasAgent(Agent):
     """Chat extension."""
     def __init__(
         self,
-        confirmation_ui: ConfirmationUI,
+        toolset: Toolset,
+        hooks: dict,
         port: int = Constant.DEFAULT_LLAMA_PORT,
         streaming_callback: StreamingCallbackT | None = None,
         **generation_kwargs
@@ -140,17 +135,7 @@ class LocasAgent(Agent):
             ),
             streaming_callback=streaming_callback,
             tools=toolset,
-            hooks={
-                "before_tool": [
-                    ConfirmationHook(
-                        # The "*" key applies this strategy to every tool
-                        confirmation_strategies={"*": BlockingConfirmationStrategy(
-                            confirmation_policy=AlwaysAskPolicy(),
-                            confirmation_ui=confirmation_ui
-                        )}
-                    ),
-                ],
-            },
+            hooks=hooks,
         )
         self.warm_up()
 

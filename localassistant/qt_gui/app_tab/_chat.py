@@ -21,6 +21,7 @@ from pyqt6_multiselect_combobox import MultiSelectComboBox
 from localassistant.models.chat import (LlamaCppServer, LocasAgent, ChatMessage, ChatRole,
                                         StreamingChunk)
 from localassistant.models.docs import LocasDocs
+from localassistant.models.tools import ToolValidator
 from localassistant.utils import (Constant, ModelGuide, ModelMetadata, UIFiles, SettingKey,
                                   PATH, LocasException)
 from localassistant.qt_gui.worker import Worker
@@ -194,9 +195,11 @@ def _chat_tab_setup(self):
             )
             self.thread_pool.start(llama_worker)
 
+            tool_validator = ToolValidator(self.setting.data)
             agent_worker = Worker(fn=LocasAgent)
             agent_worker.kwargs = {
-                "confirmation_ui": tool_confirmation_ui,
+                "toolset": tool_validator.toolset, 
+                "hooks": tool_validator.get_confirmation_strategies_hook(tool_confirmation_ui),
                 "port": self.setting.data[SettingKey.LLAMA_PORT],
                 "streaming_callback": __enqueue_streaming
             }

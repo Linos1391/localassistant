@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>586</width>
-    <height>349</height>
+    <height>323</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,7 +30,7 @@
   <property name="windowTitle">
    <string>LocalAssistant</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_6">
+  <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0">
    <item>
     <widget class="QTabWidget" name="tabWidgets">
      <property name="sizePolicy">
@@ -115,7 +115,7 @@
             <x>0</x>
             <y>0</y>
             <width>544</width>
-            <height>211</height>
+            <height>185</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -413,8 +413,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>378</width>
-            <height>466</height>
+            <width>530</width>
+            <height>681</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -507,6 +507,9 @@
                  <widget class="QLineEdit" name="settingLlamaBinPath">
                   <property name="text">
                    <string/>
+                  </property>
+                  <property name="placeholderText">
+                   <string>.../build/bin/(Release)</string>
                   </property>
                  </widget>
                 </item>
@@ -635,6 +638,85 @@
                  </layout>
                 </item>
                </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="toolsetGroupBox">
+             <property name="title">
+              <string>Toolset</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_19">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_13">
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_17">
+                  <item>
+                   <widget class="QLabel" name="label_13">
+                    <property name="text">
+                     <string>DDGS Proxy</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_14">
+                    <property name="text">
+                     <string>File Backup</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_18">
+                  <item>
+                   <widget class="QLineEdit" name="settingDdgsProxy">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="placeholderText">
+                     <string>socks5h://127.0.0.1:9050</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_12">
+                    <item>
+                     <widget class="QCheckBox" name="settingWriteBackup">
+                      <property name="text">
+                       <string>Write</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="settingEditBackup">
+                      <property name="text">
+                       <string>Edit</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="SystemTool">
+                <property name="title">
+                 <string>System Toolsets</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_20"/>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="WebSearchTool">
+                <property name="title">
+                 <string>Websearch Toolsets</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_21"/>
+               </widget>
               </item>
              </layout>
             </widget>

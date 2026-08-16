@@ -52,6 +52,7 @@ class LocasApp(QWidget):
         self.processes: list = []
         self.thread_pool = QThreadPool()
         self.setting = Setting()
+        self.setting_toolset_combo_box: dict = {}
         self.setting_model_combo_box: dict = {}
 
         # NOTICE: Download tab will set up setting tab by default

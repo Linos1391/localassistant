@@ -11,9 +11,10 @@ from haystack.tools.from_function import create_tool_from_function
 
 class SystemTool():
     """Alternative for llama.cpp tools - For human in the loop."""
-    def __init__(self, backup: bool) -> None:
-        self.backup: bool = backup
-    
+    def __init__(self, write_backup: bool, edit_backup: bool) -> None:
+        self.write_backup: bool = write_backup
+        self.edit_backup: bool = edit_backup
+
     @staticmethod
     def get_datetime():
         """Get the current time on the local machine.
@@ -93,11 +94,11 @@ class SystemTool():
             bool: Return True if success.
         """
         path: Path = Path(file_path)
-        if self.backup:
+        if path.exists() and self.write_backup:
             path.copy(path.parent / f"{path.stem}.bak")
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(file_path, 'x', encoding="utf-8") as file:
+        with open(file_path, 'w', encoding="utf-8") as file:
             file.writelines(contents)
             file.close()
         return True
@@ -116,7 +117,7 @@ class SystemTool():
             bool: Return True if success.
         """
         path: Path = Path(file_path)
-        if self.backup:
+        if path.exists() and self.edit_backup:
             path.copy(path.parent / f"{path.stem}.bak")
 
         prefix_contents = suffix_contents = []
@@ -171,15 +172,15 @@ class SystemTool():
         return captured_output
 
     @staticmethod
-    def get_tools(backup: bool = False):
+    def get_names():
+        """Get the correlated tool names."""
+        return ["get_datetime", "file_glob_search", "grep_search",
+                "read_file", "write_file", "edit_file", "exec_shell_command"]
+
+    @staticmethod
+    def get_tools(write_backup: bool = False, edit_backup: bool = False):
         """Get the correlated tools."""
-        system = SystemTool(backup=backup)
+        system = SystemTool(write_backup=write_backup, edit_backup=edit_backup)
         return [
-            create_tool_from_function(system.get_datetime),
-            create_tool_from_function(system.file_glob_search),
-            create_tool_from_function(system.grep_search),
-            create_tool_from_function(system.read_file),
-            create_tool_from_function(system.write_file),
-            create_tool_from_function(system.edit_file),
-            create_tool_from_function(system.exec_shell_command)
+            create_tool_from_function(getattr(system, tool)) for tool in system.get_names()
         ]
