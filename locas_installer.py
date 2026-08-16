@@ -213,7 +213,20 @@ class Installer:
     @staticmethod
     def setup_llama_cpp_bin_path(env_path: Path):
         """Llama.cpp bin path."""
-        llama_path: str = input("\nPaste in the path to installed llama.cpp bin (.../build/bin): ")
+        while True:
+            llama_path: str = input("\nPaste in the path to installed llama.cpp bin "
+                                    "(.../build/bin or ...\\build\\bin\\Release): ")
+            if not llama_path:
+                print("Llama.cpp path is empty. Please try again")
+                continue
+
+            llama_real_path: Path = Path(llama_path)
+            llama_executors: list[str] = ["llama-server", "llama-server.exe", "llama", "llama.exe"]
+            if any(map(lambda exec: (llama_real_path / exec).exists(), llama_executors)):
+                break
+            else:
+                print(f"The path {llama_real_path.resolve()} is invalid, cannot find "
+                      "neither `llama` nor `llama-server` within. Please try again.")
 
         subprocess.run([
             Installer.get_venv_python(env_path),

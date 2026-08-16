@@ -239,21 +239,22 @@ class WebSearchTool(DDGS):
             return False, str(e)
 
     @staticmethod
-    def get_tools(proxy: str | None = None):
+    def get_names():
+        """Get the correlated tool names."""
+        return ["search_text", "search_images", "search_videos",
+                "search_news", "search_books", "extract_content"]
+
+    @staticmethod
+    def get_tools(ddgs_proxy: str = ""):
         """Get the correlated tools."""
-        if proxy:
-            valid, result = WebSearchTool._check_valid_proxy(proxy)
+        if ddgs_proxy:
+            valid, result = WebSearchTool._check_valid_proxy(ddgs_proxy)
             if not valid:
                 LOGGER.exception("Connect with proxy unsuccessfully with error: %s", result)
                 return []
             LOGGER.info("Connect with proxy successfully, used IP is: %s", result)
 
-        websearch = WebSearchTool(proxy=proxy)
+        websearch = WebSearchTool(proxy=ddgs_proxy)
         return [
-            create_tool_from_function(websearch.search_text),
-            create_tool_from_function(websearch.search_images),
-            create_tool_from_function(websearch.search_videos),
-            create_tool_from_function(websearch.search_news),
-            create_tool_from_function(websearch.search_books),
-            create_tool_from_function(websearch.extract_content)
+            create_tool_from_function(getattr(websearch, tool)) for tool in websearch.get_names()
         ]

@@ -14,11 +14,10 @@ Learn more through these instructions below:
 
 - [Installation](installation.md)
 - [Models](models.md)
-- Tabs
-  - [Chat Tab](tabs/tab_chat.md)
-  - [Documents Tab](tabs/tab_documents.md)
-  - [Download Tab](tabs/tab_download.md)
-  - [Setting Tab](tabs/tab_setting.md)
+- [Chat Tab](tabs/tab_chat.md)
+- [Documents Tab](tabs/tab_documents.md)
+- [Download Tab](tabs/tab_download.md)
+- [Setting Tab](tabs/tab_setting.md)
 
 ## Contribution
 

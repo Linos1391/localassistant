@@ -324,6 +324,10 @@ class SettingKey:
     QDRANT_LOAD = "qdrant_load"
     TOP_K = "top_k"
     SCORE_THRESHOLD = "score_threshold"
+    DDGS_PROXY = "ddgs_proxy"
+    WRITE_BACKUP = "write_backup"
+    EDIT_BACKUP = "edit_backup"
+    TOOL_POLICY = "tool_policy"
     MODELS = "models"
 
 class Setting:
