@@ -98,10 +98,12 @@ class Constant:
 
     MESSAGE_LINE_BREAK = " \n \n "
     TOOL_RESULT_LENGTH_LIMIT = 200
+    TOOL_HOOK_IMAGE_CONTENT = "IMAGE-CONTENT-BASE64: "
+    TOOL_HOOK_IMAGE_TEXT = "Image Content:"
 
     DEFAULT_MAX_CHAT_MESSAGE = 25
     DEFAULT_MAX_HISTORY = 5
-    DEFAULT_LLAMA_PORT = 8000
+    DEFAULT_LLAMA_PORT = 8080
 
     TEMPLATE = (
         "Provide response with the following information (or access the tools for more)."

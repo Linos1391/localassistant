@@ -15,6 +15,9 @@ animflow
 # For downloading
 huggingface-hub
 
+# For screenshot
+pyscreenshot
+
 # For web-searching
 ddgs
 

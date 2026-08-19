@@ -548,6 +548,8 @@ def _chat_tab_setup(self):
                                 if content.get("type", "") == "text":
                                     chat_message_text = content.get("text", "")
                                     break
+                            if chat_message_text == Constant.TOOL_HOOK_IMAGE_TEXT:
+                                continue
 
                         if isinstance(chat_message_text, str):
                             message_box.setMarkdown(
