@@ -7,7 +7,15 @@ import glob
 import sys
 from threading import Thread
 
+import base64
+from io import BytesIO
+from PIL import Image
+import pyscreenshot
+
+from haystack.dataclasses import ImageContent
 from haystack.tools.from_function import create_tool_from_function
+
+from localassistant.utils import Constant
 
 class SystemTool():
     """Alternative for llama.cpp tools - For human in the loop."""
@@ -172,15 +180,47 @@ class SystemTool():
         return captured_output
 
     @staticmethod
+    def screenshot():
+        """Taking screenshot from use current screen and view it."""
+        screenshot = pyscreenshot.grab()
+        if not isinstance(screenshot, Image.Image):
+            raise OSError("Failed to take screenshot")
+
+        buffer = BytesIO()
+        screenshot.save(buffer, format="WEBP")
+        buffer.seek(0)
+        base64_image = base64.b64encode(buffer.read()).decode("utf-8")
+        return Constant.TOOL_HOOK_IMAGE_CONTENT+base64_image
+
+    @staticmethod
+    def view_image_file(file_path: str):
+        """View the image from a file path.
+
+        Args:
+            file_path (str): Path to file.
+        """
+        return Constant.TOOL_HOOK_IMAGE_CONTENT+ImageContent.from_file_path(file_path).base64_image
+
+    @staticmethod
+    def view_image_url(image_url: str):
+        """View the image from a file path.
+
+        Args:
+            image_url (str): The online url of the image.
+        """
+        return Constant.TOOL_HOOK_IMAGE_CONTENT+ImageContent.from_url(image_url).base64_image
+
+    @staticmethod
     def get_names():
         """Get the correlated tool names."""
-        return ["get_datetime", "file_glob_search", "grep_search",
-                "read_file", "write_file", "edit_file", "exec_shell_command"]
+        return ["get_datetime", "file_glob_search", "grep_search", "exec_shell_command",
+                "read_file", "write_file", "edit_file", "screenshot", "view_image_file",
+                "view_image_url"]
 
     @staticmethod
     def get_tools(write_backup: bool = False, edit_backup: bool = False):
         """Get the correlated tools."""
         system = SystemTool(write_backup=write_backup, edit_backup=edit_backup)
         return [
-            create_tool_from_function(getattr(system, tool)) for tool in system.get_names()
+            create_tool_from_function(getattr(system, tool)) for tool in SystemTool.get_names()
         ]

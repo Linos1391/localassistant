@@ -13,9 +13,12 @@ from PyQt6.QtCore import QProcess, QIODevice
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.components.agents import Agent
-from haystack.dataclasses import ChatMessage, ChatRole, StreamingCallbackT, StreamingChunk #pylint:disable=W0611:unused-import
+from haystack.components.agents.state import State, replace_values
+from haystack.dataclasses import (ImageContent, ChatMessage, ChatRole, StreamingCallbackT, #pylint:disable=W0611:unused-import
+                                  ToolCallResult, StreamingChunk)
 from haystack.utils import Secret
 from haystack.tools import Toolset
+from haystack.hooks import hook
 
 from localassistant.utils import LocasException, UtilsMethod, Constant, PATH
 
@@ -126,6 +129,7 @@ class LocasAgent(Agent):
             required_variables=["query"]
         )
 
+        hooks.update({"after_tool": [self._convert_image_content]})
         super().__init__(
             chat_generator=OpenAIChatGenerator(
                 model="",
@@ -137,6 +141,34 @@ class LocasAgent(Agent):
             tools=toolset,
             hooks=hooks,
         )
+        self.warm_up()
+
+    @hook
+    @staticmethod
+    def _convert_image_content(state: State) -> None:
+        """Receive image content from tool result and convert it to user input."""
+        replaced_chat_messages = []
+        for tool_content in state.data["messages"][-1]._content: #pylint:disable=W0212:protected-access
+            if tool_content.result.startswith(Constant.TOOL_HOOK_IMAGE_CONTENT):
+                base64_img: str = tool_content.result.removeprefix(Constant.TOOL_HOOK_IMAGE_CONTENT)
+                replaced_chat_messages += [
+                    ChatMessage.from_tool(
+                        "Received an image. Please check user input for image content.",
+                        tool_content.origin, tool_content.error
+                    ),
+                    ChatMessage.from_user(
+                        content_parts=[Constant.TOOL_HOOK_IMAGE_TEXT, ImageContent(base64_img)]
+                    )
+                ]
+                state.set(
+                    "messages",
+                    [*(state.data["messages"][:-1]), *replaced_chat_messages],
+                    handler_override=replace_values
+                )
+
+    def stop_generation(self):
+        """Stop mid generation for agent."""
+        self.close()
         self.warm_up()
 
     def agent_chat(self, max_chat_message: int = Constant.DEFAULT_MAX_CHAT_MESSAGE) -> str:
