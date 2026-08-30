@@ -8,7 +8,6 @@ description = "Localassistant (locas) is just a local AI, and to me, is the loca
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "ai-emotion",
     "animflow>=0.2.2",
     "ddgs>=9.14.4",
     "fastembed-haystack>=2.6.0",
@@ -64,6 +63,3 @@ path = "localassistant/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["localassistant"]
-
-[tool.uv.sources]
-ai-emotion = { git = "https://github.com/Linos1391/AIEmotion" }
