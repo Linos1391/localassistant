@@ -1,4 +1,4 @@
-#pylint: disable=E0611:no-name-in-module
+#pylint: disable=E0611:no-name-in-module E0401:import-error
 """GUI using PyQt."""
 import sys
 import os

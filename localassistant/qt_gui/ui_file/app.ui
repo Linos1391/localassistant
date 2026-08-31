@@ -412,9 +412,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-110</y>
             <width>530</width>
-            <height>681</height>
+            <height>713</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -475,7 +475,14 @@
                 <item>
                  <widget class="QLabel" name="label_9">
                   <property name="text">
-                   <string>Llama Port</string>
+                   <string>Llama.cpp Port</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_15">
+                  <property name="text">
+                   <string>Llama.cpp Kwargs</string>
                   </property>
                  </widget>
                 </item>
@@ -530,6 +537,13 @@
                    </widget>
                   </item>
                  </layout>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="settingLlamaKwargs">
+                  <property name="placeholderText">
+                   <string>--image-min-tokens 1024</string>
+                  </property>
+                 </widget>
                 </item>
                 <item>
                  <widget class="QSpinBox" name="settingMaxChatMessage">

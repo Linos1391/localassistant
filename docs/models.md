@@ -4,7 +4,7 @@
 
 The main Image Text to Text model used for communication, has to be gguf for compatible with Llama.cpp.
 
-**Recommendation:** [unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-BF16.gguf](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF/blob/main/Qwen3.5-0.8B-BF16.gguf).
+**Recommendation:** [openbmb/MiniCPM-V-4.6-gguf/MiniCPM-V-4_6-Q8_0.gguf](https://huggingface.co/openbmb/MiniCPM-V-4.6-gguf/blob/main/MiniCPM-V-4_6-Q8_0.gguf).
 
 *(Choose other models from [here](https://huggingface.co/models?pipeline_tag=image-text-to-text&apps=llama.cpp).)*
 
@@ -13,7 +13,7 @@ The main Image Text to Text model used for communication, has to be gguf for com
 
 The mmproj of the Image Text to Text model, essential for vision-enabled agent, has to be gguf for compatible with Llama.cpp.
 
-**Recommendation:** [unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF/blob/main/mmproj-BF16.gguf).
+**Recommendation:** [openbmb/MiniCPM-V-4.6-gguf/mmproj-model-f16.gguf](https://huggingface.co/openbmb/MiniCPM-V-4.6-gguf/blob/main/mmproj-model-f16.gguf).
 
 *(Choose other models from [here](https://huggingface.co/models?pipeline_tag=image-text-to-text&apps=llama.cpp).)*
 

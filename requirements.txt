@@ -25,7 +25,7 @@ ddgs
 fastembed-haystack
 qdrant-haystack
 
-# For docs  reading
+# For docs reading
 pypdf
 markdown-it-py
 mdit_plain

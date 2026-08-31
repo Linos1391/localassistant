@@ -143,11 +143,11 @@ def _chat_tab_setup(self):
                 self._show_error((AssertionError, "Cannot access to a valid agent."))
                 return
 
-            llama_kwargs: dict = {}
+            kwargs: dict = {}
             mmproj_name: str = self._get_model_name(model_meta.role[1], model_meta.url,
                                                     show_error = False)
             if mmproj_name:
-                llama_kwargs.update({
+                kwargs.update({
                     "mmproj_path": self._direct_to_model_name(model_meta.tag, mmproj_name)
                 })
 
@@ -157,7 +157,7 @@ def _chat_tab_setup(self):
             if lora_name:
                 lora_combo_box = self.setting_model_combo_box.get(lora_meta.role[0])
                 if isinstance(lora_combo_box, MultiSelectComboBox):
-                    llama_kwargs.update({
+                    kwargs.update({
                         "lora_paths": list(map(
                             lambda name: self._direct_to_model_name(lora_meta.tag, name),
                             lora_name.split(lora_combo_box.getDisplayDelimiter())
@@ -176,7 +176,8 @@ def _chat_tab_setup(self):
                 llama_bin_path=self.setting.data.get(SettingKey.LLAMA_CPP_BIN, ""),
                 model_path=self._direct_to_model_name(model_meta.tag, model_name),
                 port=self.setting.data[SettingKey.LLAMA_PORT],
-                **llama_kwargs
+                llama_kwargs=self.setting.data.get(SettingKey.LLAMA_KWARGS, "").strip().split(),
+                **kwargs
             )
             self.processes.append(llama_server_process)
 

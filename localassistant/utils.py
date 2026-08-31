@@ -320,6 +320,7 @@ class SettingKey:
     LLAMA_CPP_BIN = "llama_cpp_bin"
     LLAMA_PORT = "llama_port"
     LLAMA_PORT_KILL = "llama_port_kill"
+    LLAMA_KWARGS = "llama_kwargs"
     MAX_CHAT_MESSAGE = "max_chat_message"
     MAX_HISTORY = "max_history"
     QDRANT_PORT = "qdrant_port"
