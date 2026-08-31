@@ -21,6 +21,7 @@ class UILabel:
     SETTING_LLAMA_BIN_PATH = "settingLlamaBinPath"
     SETTING_LLAMA_PORT = "settingLlamaPort"
     SETTING_LLAMA_PORT_KILL = "settingLlamaPortKill"
+    SETTING_LLAMA_KWARGS = "settingLlamaKwargs"
     SETTING_MAX_CHAT_MESSAGE = "settingMaxChatMessage"
     SETTING_MAX_HISTORY = "settingMaxHistory"
     SETTING_QDRANT_PORT = "settingQdrantPort"
@@ -70,6 +71,9 @@ def _setting_tab_setup(self):
         ))
         self._get(self, UILabel.SETTING_LLAMA_PORT_KILL).setChecked(
             self.setting.data.setdefault(SettingKey.LLAMA_PORT_KILL, False)
+        )
+        self._get(self, UILabel.SETTING_LLAMA_KWARGS).setText(
+            self.setting.data.setdefault(SettingKey.LLAMA_KWARGS, "")
         )
         self._get(self, UILabel.SETTING_MAX_CHAT_MESSAGE).setValue(
             self.setting.data.setdefault(SettingKey.MAX_CHAT_MESSAGE,
@@ -190,6 +194,7 @@ def _setting_tab_setup(self):
             SettingKey.LLAMA_CPP_BIN: self._get(self, UILabel.SETTING_LLAMA_BIN_PATH).text(),
             SettingKey.LLAMA_PORT: int(self._get(self, UILabel.SETTING_LLAMA_PORT).text()),
             SettingKey.LLAMA_PORT_KILL: self._get(self,UILabel.SETTING_LLAMA_PORT_KILL).isChecked(),
+            SettingKey.LLAMA_KWARGS: self._get(self, UILabel.SETTING_LLAMA_KWARGS).text(),
             SettingKey.MAX_CHAT_MESSAGE: self._get(self, UILabel.SETTING_MAX_CHAT_MESSAGE).value(),
             SettingKey.MAX_HISTORY: self._get(self, UILabel.SETTING_MAX_HISTORY).value(),
             SettingKey.QDRANT_PORT: int(self._get(self, UILabel.SETTING_QDRANT_PORT).text()),

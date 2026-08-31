@@ -34,8 +34,8 @@ class LlamaCppServer(QProcess):
         model_path: str,
         mmproj_path: str = "",
         lora_paths: list[str] | None = None,
-        llama_tools_enable: bool = False,
-        port: int = Constant.DEFAULT_LLAMA_PORT
+        port: int = Constant.DEFAULT_LLAMA_PORT,
+        llama_kwargs: list[str] = []
     ) -> None:
         super().__init__()
         self.is_loaded: bool = False
@@ -49,17 +49,14 @@ class LlamaCppServer(QProcess):
 
         llama_execution: str = ""
         llama_arguments: list = [
-            "--model", model_path,
-            "--port", str(port),
-            "--image-min-tokens", "1024", "--no-ui"
-        ]
+            "--model", model_path, "--port", str(port), "--no-ui"
+        ] + llama_kwargs
+
         if mmproj_path:
             llama_arguments += ["--mmproj", mmproj_path]
         if lora_paths:
             for lora_path in lora_paths:
                 llama_arguments += ["--lora", lora_path]
-        if llama_tools_enable:
-            llama_arguments += ["--tools", "all"]
 
         for llama in ("llama-server", "llama-server.exe", "llama", "llama.exe"):
             _path: Path = Path(llama_bin_path) / llama
