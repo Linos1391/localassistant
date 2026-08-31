@@ -10,6 +10,14 @@ from localassistant.utils import Constant, ModelGuide, UtilsMethod, PATH
 
 LOGGER = logging.getLogger(__name__)
 
+STARTER_MODELS: dict = {
+    "agent": "openbmb/MiniCPM-V-4.6-gguf/MiniCPM-V-4_6-Q8_0.gguf",
+    "agent-mmproj": "openbmb/MiniCPM-V-4.6-gguf/mmproj-model-f16.gguf",
+    "dense-embedder": "Qdrant/clip-ViT-B-32-text",
+    "sparse-embedder": "Qdrant/bm25",
+    "image-embedder": "Qdrant/clip-ViT-B-32-vision"
+}
+
 def download(repo_id: str, parent_dir: Path, token: str | None = None):
     """Download model from HuggingFace.
 
@@ -61,12 +69,6 @@ def download(repo_id: str, parent_dir: Path, token: str | None = None):
 
 def download_starter_models():
     """Download starter models."""
-    for model in (
-        "unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-BF16.gguf",
-        "unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf",
-        "Qdrant/clip-ViT-B-32-text",
-        "Qdrant/bm25",
-        "Qdrant/clip-ViT-B-32-vision"
-    ):
-        print(f"\nDownload {model}")
+    for model in STARTER_MODELS.values():
+        print(f"\nDownload '{model}':")
         download(model, parent_dir=PATH.models)

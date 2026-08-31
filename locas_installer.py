@@ -6,6 +6,8 @@ import venv
 import subprocess
 import shutil
 
+#TODO - make it rich.
+
 class Installer:
     """OOP friendly."""
     @staticmethod
@@ -250,8 +252,14 @@ class Installer:
         subprocess.run([
             Installer.get_venv_python(env_path),
             "-c", (
-                "from localassistant.models.download import download_starter_models;"
-                "download_starter_models()"
+                "from localassistant.models.download import download_starter_models,STARTER_MODELS;"
+                "from localassistant.utils import Setting, SettingKey;"
+                "download_starter_models();"
+                "setting = Setting();"
+                "setting.data.update({"
+                    "SettingKey.MODELS: STARTER_MODELS"
+                "});"
+                "setting.update_setting_file()"
             )
         ], check=True)
 
