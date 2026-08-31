@@ -21,6 +21,9 @@ class EmotionManipulator:
 
     def setup_animation(self):
         """Get all the animations and setup within the manipulator."""
+        self.displayer = Displayer()
+        self.animations = {}
+
         for folder in (AnimationFolder.EMOTIONS, AnimationFolder.ACTIONS):
             animations = self.get_animations_from_sources(folder)
             self.animations.update({
@@ -38,7 +41,7 @@ class EmotionManipulator:
 
         animations: list[Animation] = []
         for file in animation_path.iterdir():
-            if file.is_file() and file.suffix == ".tar.xr":
+            if file.is_file() and file.name.endswith(".tar.xz"):
                 try:
                     animation: Animation = Animation(file)
                 except OSError:
