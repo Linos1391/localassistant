@@ -89,13 +89,13 @@ Recommend to choose yes, please type `n` if you do not want to.
 
 *Models that will be installed:*
 
-| Repo id                                          | Description                                                       |
-| ------------------------------------------------ | ----------------------------------------------------------------- |
-| unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-BF16.gguf | BF16 version of Qwen3.5 0.8B, used for llama.cpp                  |
-| unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf       | BF16 version of mmproj of Qwen3.5 0.8B, enable vision for Qwen3.5 |
-| Qdrant/clip-ViT-B-32-text                        | Fastembed dense embedder, multimodel (text&image)                 |
-| Qdrant/bm25                                      | Fastembed sparse embedder, use BM25                               |
-| Qdrant/clip-ViT-B-32-vision                      | Fastembed image embedder, multimodel (text&image)                 |
+| Repo id                                            | Description                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| openbmb/MiniCPM-V-4.6-gguf/MiniCPM-V-4_6-Q8_0.gguf | Q8 version of MiniCPM V4.6, used for llama.cpp                    |
+| openbmb/MiniCPM-V-4.6-gguf/mmproj-model-f16.gguf   | BF16 version of mmproj of MiniCPM V4.6, enable vision for Qwen3.5 |
+| Qdrant/clip-ViT-B-32-text                          | Fastembed dense embedder, multimodel (text&image)                 |
+| Qdrant/bm25                                        | Fastembed sparse embedder, use BM25                               |
+| Qdrant/clip-ViT-B-32-vision                        | Fastembed image embedder, multimodel (text&image)                 |
 
 For more details, see [here](models.md)
 
